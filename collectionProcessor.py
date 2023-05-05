@@ -9,26 +9,40 @@ EntitywithMetadata = URIRef('')
 Collection = URIRef('')
 Manifest = URIRef('')
 Canvas = URIRef('')
+#why not adding also
+IdentifiableEntity = URIRef('')
+Annotation = URIRef('')
+Image = URIRef('')
+
 
 # attributes related to classes
-# attributes in json file or in UML ????
+# attributes in json file or in UML ???? >> I think in the UML 
 id = URIRef('')
-type = URIRef('')
+type = URIRef('') #why this since it the json it addresses the class to which the item belongs?
 label = URIRef('')
-item = URIRef('')
+item = URIRef('') #i think this is viewed as a relation within the collection (see point below), so it's not an attribute (???)
 title = URIRef('')
-# ...
+# probably these two are totally useless but let's keep them here??
+# creators = URIRef('')
+# motivation = URIRef('')
+
+# I think these are also to be added: 
+# relations among classes
+target = URIRef('')
+body = URIRef('')
+items = URIRef('')
 
 
 class CollectionProcessor(Processor):
     def __init__(self):
         super(Processor).__init__()
         # database path
+        # self.dbPathOrUrl = None
 
     def uploadData(self, path):
-        graph = create_triples(self, path)
+        graph = create_triples(self, path) 
         store = SPARQLUpdateStore()
-        endpoint = ''  # database path
+        endpoint = ''  # database path == self.dbPathOrUrl
 
         store.open((endpoint, endpoint))
 
@@ -43,14 +57,14 @@ class CollectionProcessor(Processor):
         with open(path, "r", encoding="utf-8") as f:
             json_doc = load(f)
 
-            for name, value in json_doc.items():
+            for name, value in json_doc.items(): 
                 if name == 'id':
                     subject = URIRef(value)
 
                 if name == 'type':
                     # should we add collection case(???)
                     if value == 'Collection':  # json.dump() ???
-                        object = Collection
+                        object = Collection 
 
                     if value == 'Manifest':  # json.dump() ???
                         object = Manifest
@@ -63,11 +77,15 @@ class CollectionProcessor(Processor):
 
                 if name == 'label':
                     for name_l, value_l in value.items():  # might not work
+                        # subject = name_l
                         object = Literal(value_l)
                         triple = (subject, label, object)
                         graph.add(triple)
 
-                if name == 'item':
-                    for d in value:
+                if name == 'item': #i think it's with an "s" >> items
+                    for d in value:  
                         # another triple for item???
-                        create_triples(graph, d)
+                        create_triples(graph, d) #is d a path? I am confused
+                        # were you using json.dump so that the file "empties" itself 
+                        # and one can go back to its new version recursively ??
+
