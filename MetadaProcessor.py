@@ -10,6 +10,12 @@ metadata = read_csv("C:\\Users\\chiar\\Documents\\Magistrale\\DataScience\\metad
                       "creator": "string"
                   })
 
+# 'ITEMS': RELATION COLLECTION-MANIFEST
+collection_manifest = pd.DataFrame()
+
+# 'ITEMS': RELATION MANIFEST-CANVAS
+manifest_canvas = pd.DataFrame()
+
 # COLLECTIONS TABLE
 collections = pd.DataFrame() # empty DataFrame object
 collections_id = []
@@ -71,7 +77,7 @@ for idx, row in canvases.iterrows():
 
 canvases.insert(0, "canvasesId", Series(canvases_internal_id, dtype="string"))
 
-# 'ITEMS': RELATION COLLECTION-MANIFEST
+
 
 
 # print(collections)
