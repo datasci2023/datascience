@@ -80,15 +80,18 @@ class CollectionProcessor(Processor):
                     graph.add(triple)
 
                 if name == "label":
-                    for name_l, value_l in value.items():  # might not work
-                        # subject = name_l
-                        object = Literal(value_l)
+                    object = label
+                    for name_l, value_l in value:
+                        object = name_l
                         triple = (subject, label, object)
                         graph.add(triple)
 
-                if name == "item":  # i think it's with an "s" >> items
+                        s = name_l
+                        o = value_l
+                        triple = (s, RDF.type, o)
+                        graph.add(triple)
+
+                if name == "items":
                     for d in value:
                         # another triple for item???
-                        create_triples(graph, d)  # is d a path? I am confused
-                        # were you using json.dump so that the file "empties" itself
-                        # and one can go back to its new version recursively ??
+                        create_triples(graph, d)
