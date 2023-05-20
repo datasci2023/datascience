@@ -30,12 +30,13 @@ for column_name, column in metadata.items():
 
 collections.insert(0, "id", Series(collections_id, dtype="string")) # Append the items in my list in a column of the DataFrame "collections"
 collections.insert(1, "title", Series(collections_title, dtype="string"))
+collection_manifest.insert(0, "collectionId", Series(collections_id, dtype="string"))
 
 collections_internal_id = []
 for idx, row in collections.iterrows():
     collections_internal_id.append("collection-" + str(idx)) # Create a list of internal ids
 
-collections.insert(0, "manifestId", Series(collections_internal_id, dtype="string")) # Append the internal IDs in a column of the Data Frame "collections"
+collections.insert(0, "collectionIntId", Series(collections_internal_id, dtype="string")) # Append the internal IDs in a column of the Data Frame "collections"
 
 # MANIFESTS TABLE
 manifests = pd.DataFrame() # empty DataFrame object
@@ -50,12 +51,13 @@ for column_name, column in metadata.items():
 
 manifests.insert(0, "id", Series(manifests_id, dtype="string")) # Append the items in my list in a column of the DataFrame "manifests"
 manifests.insert(1, "title", Series(manifests_title, dtype="string"))
+collection_manifest.insert(1, "manifestId", Series(manifests_id, dtype="string"))
 
 manifests_internal_id = []
 for idx, row in manifests.iterrows():
     manifests_internal_id.append("manifest-" + str(idx)) # Create a list of internal ids
 
-manifests.insert(0, "manifestId", Series(manifests_internal_id, dtype="string")) # Append the internal IDs in a column of the Data Frame "manifests"
+manifests.insert(0, "manifestIntId", Series(manifests_internal_id, dtype="string")) # Append the internal IDs in a column of the Data Frame "manifests"
 
 # CANVAS TABLE
 canvases = pd.DataFrame() 
@@ -79,9 +81,10 @@ canvases.insert(0, "canvasesId", Series(canvases_internal_id, dtype="string"))
 
 
 
-
+print(manifests_id)
 # print(collections)
-# print(manifests)
+print(manifests)
+print(collection_manifest)
 # print(canvases)
 
 # with connect("relationaldatabase.db") as con:
