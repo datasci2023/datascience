@@ -2,6 +2,9 @@ from processor import Processor
 from sqlite3 import connect
 from pandas import read_sql
 
+from pandas.io.json import json_normalize
+from SPARQLWrapper import SPARQLWrapper, JSON
+
 
 class QueryProcessor(Processor):
     def __init__(self):
@@ -22,15 +25,27 @@ class QueryProcessor(Processor):
             df = read_sql(query, con)
             return df
         else:
-            endpoint = "http://127.0.0.1:9999/blazegraph/sparql"
-            query = """
-            PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-            PREFIX schema: <https://schema.org/>
-
-            SELECT ?id
+            endpoint = self.getDbPathOrUrl()
+            query = (
+                """
+            PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+            PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+            PREFIX p1: <https://github.com/datasci2023/datascience/res/>
+            PREFIX p2: <https://github.com/datasci2023/datascience/attr/>
+            SELECT ?id ?items ?type ?label 
             WHERE {
-                ?id 
+                ?literal_id a \""""
+                + entityId
+                + """\" .
+                ?id p2:id ?literal_id;
+                    rdf:type ?type ;
+                    rdfs:label ?label .
+                OPTIONAL { ?id p2:items ?items}
             }
             """
-            df_sparql = get(endpoint, query, True)
-            return df_sparql
+            )
+            sparql = SPARQLWrapper(endpoint)
+            sparql.setQuery(query)
+            sparql.setReturnFormat(JSON)
+            result = sparql.query().convert()
+            return json_normalize(result)  # ???
