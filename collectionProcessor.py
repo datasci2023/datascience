@@ -7,9 +7,8 @@ from rdflib.plugins.stores.sparqlstore import SPARQLUpdateStore
 
 
 class CollectionProcessor(Processor):
-    def __init__(self, dbPathOrUrl: str):
-        super(Processor).__init__(dbPathOrUrl)
-        # self.dbPathOrUrl = None
+    def __init__(self):
+        super().__init__()
 
     def uploadData(self, path):
         try:
@@ -33,7 +32,7 @@ class CollectionProcessor(Processor):
 
             store = SPARQLUpdateStore()
 
-            endpoint = self.getdbPathOrUrl()
+            endpoint = self.getDbPathOrUrl()
 
             store.open((endpoint, endpoint))
 
@@ -53,35 +52,43 @@ class CollectionProcessor(Processor):
         Manifest = URIRef("https://github.com/datasci2023/datascience/res/Manifest")
         Canvas = URIRef("https://github.com/datasci2023/datascience/res/Canvas")
 
-        # attributes related to classes
+        # attributes related to classes - properties
         id = URIRef("https://github.com/datasci2023/datascience/attr/id")
         type = URIRef("https://github.com/datasci2023/datascience/attr/type")
         label = URIRef("https://github.com/datasci2023/datascience/attr/label")
         items = URIRef("https://github.com/datasci2023/datascience/attr/items")
 
-        # create graph database
-        graph = Graph()
-
         # create and add triples starting from the collection
         # subject = URIRef(json_doc["id"])
         # # what is the smartest way to define the subject
+        graph.add((URIRef(json_doc["id"]), id, Literal(json_doc["id"])))
+        # for URIs, check how peroni defined base and generic URIs in hon#05
+        graph.add((URIRef(json_doc["id"]), RDF.type, Collection))
         graph.add(
-            URIRef(json_doc["id"]), id, Literal(json_doc["id"])
-        )  # for URIs, check how peroni defined base and generic URIs in hon#05
-        graph.add(URIRef(json_doc["id"]), RDF.type, Collection)
-        graph.add(
-            URIRef(json_doc["id"]), RDFS.label, URIRef(json_doc["label"])
+            (URIRef(json_doc["id"]), RDFS.label, Literal(json_doc["label"]))
         )  # find a way to add label
 
-        for idx, manifest in json_doc["items"]:
+        for manifest in json_doc["items"]:
             # subject = URIRef(manifest["id"])
-            graph.add(URIRef(json_doc["id"]), items, URIRef(manifest["id"]))
-            graph.add(URIRef(manifest["id"]), id, Literal(manifest["id"]))
-            graph.add(URIRef(manifest["id"]), RDF.type, Manifest)
-            graph.add(URIRef(manifest["id"]), RDFS.label, URIRef(manifest["label"]))
+            graph.add((URIRef(json_doc["id"]), items, URIRef(manifest["id"])))
+            graph.add((URIRef(manifest["id"]), id, Literal(manifest["id"])))
+            graph.add((URIRef(manifest["id"]), RDF.type, Manifest))
+            graph.add(
+                (
+                    URIRef(manifest["id"]),
+                    RDFS.label,
+                    Literal("".join(list(manifest["label"].values())[0])),
+                )
+            )
 
-            for idx, canvas in manifest["items"]:
-                graph.add(URIRef(manifest["id"]), items, URIRef(manifest["id"]))
-                graph.add(URIRef(canvas["id"]), id, Literal(canvas["id"]))
-                graph.add(URIRef(canvas["id"]), RDF.type, Canvas)
-                graph.add(URIRef(canvas["id"]), RDFS.label, URIRef(canvas["label"]))
+            for canvas in manifest["items"]:
+                graph.add((URIRef(manifest["id"]), items, URIRef(canvas["id"])))
+                graph.add((URIRef(canvas["id"]), id, Literal(canvas["id"])))
+                graph.add((URIRef(canvas["id"]), RDF.type, Canvas))
+                graph.add(
+                    (
+                        URIRef(canvas["id"]),
+                        RDFS.label,
+                        Literal("".join(list(canvas["label"].values())[0])),
+                    )
+                )
