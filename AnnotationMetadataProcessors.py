@@ -51,7 +51,7 @@ class MetadataProcessor(Processor):
                         creator_internal_id.append(internal_id)
                         internal_id_dict[creator] = internal_id
                 
-                creators_def.insert(1,"creator_internal_id", Series(creator_internal_id, dtype= "string"))
+                creators_def.insert(0,"creator_internal_id", Series(creator_internal_id, dtype= "string"))
                  
 
 
@@ -123,7 +123,7 @@ class AnnotationProcessor(Processor):
                 for idx, row in  path2.iterrows():
                     annotation_internal_id.append("annotation-" + str(idx))
 
-                annotation_table.insert(1, "annotation_internal_id", Series(annotation_internal_id, dtype="string"))
+                annotation_table.insert(0, "annotation_internal_id", Series(annotation_internal_id, dtype="string"))
 
                 annotation_bodies = []
                 for idx, value in path2['body'].items():
@@ -166,11 +166,11 @@ class AnnotationProcessor(Processor):
                 for idx, rows in image.iterrows():
                     image_internal_id.append("images-" + str(idx))
 
-                image.insert(1, "images_internal_id", Series(image_internal_id, dtype="string"))
+                image.insert(0, "images_internal_id", Series(image_internal_id, dtype="string"))
 
                 annotation_merged2 = merge(annotations, image, left_on="annotation_bodies", right_on="image_ids")
                 # Merge Annotations table with Images table, using as key the id of the image
-                annotation_def = annotation_merged2[["annotation_ids", "annotation_motivations", "annotation_internal_id", "images_internal_id", "annotation_targets"]]
+                annotation_def = annotation_merged2[["annotation_internal_id", "annotation_ids", "images_internal_id", "annotation_targets", "annotation_motivations"]]
                 # Keep only the columns we need
                 annotation_def = annotation_def.rename(columns={"images_internal_id": "annotation_bodies"})
                 # Use the column with the image internal id, instead of just the id; rename it as "annotation_bodies"
