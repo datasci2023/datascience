@@ -8,8 +8,7 @@ from rdflib.plugins.stores.sparqlstore import SPARQLUpdateStore
 
 class CollectionProcessor(Processor):
     def __init__(self):
-        self.dbPathOrUrl = None
-        super(Processor).__init__()
+        super().__init__()
 
     def uploadData(self, path):
         try:
@@ -66,7 +65,7 @@ class CollectionProcessor(Processor):
         # for URIs, check how peroni defined base and generic URIs in hon#05
         graph.add((URIRef(json_doc["id"]), RDF.type, Collection))
         graph.add(
-            (URIRef(json_doc["id"]), RDFS.label, URIRef(json_doc["label"]))
+            (URIRef(json_doc["id"]), RDFS.label, Literal(json_doc["label"]))
         )  # find a way to add label
 
         for manifest in json_doc["items"]:

@@ -3,7 +3,7 @@ from pandas import DataFrame, concat
 from queryProcessor import QueryProcessor
 
 
-class TriplestoreQueryProcessor:
+class GenericQueryProcessor:
     def __init__(self):
         self.queryProcessor = []
 
@@ -27,4 +27,3 @@ class TriplestoreQueryProcessor:
             df = concat(processor, df)
             
         for idx,rows in df.iterrows():
-             
