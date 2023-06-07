@@ -22,6 +22,12 @@ class RelationalQueryProcessor(QueryProcessor):
             df_sql = read_sql(query, con)
             return df_sql
     
+    def getAllEntites(self):
+        with connect("relationaldatabase.db") as con:
+            query = "SELECT * FROM EntitiesWithMetadata"
+            df_sql = read_sql(query, con)
+            return df_sql
+    
     def getAnnotationsWithBody(self, bodyId: str):
         with connect("relationaldatabase.db") as con:
             query = """
@@ -79,7 +85,6 @@ class RelationalQueryProcessor(QueryProcessor):
             df_sql = read_sql(query, con, params=(creatorName,))
             return df_sql
         
-
 
 # print(RelationalQueryProcessor.getEntitiesWithCreator(self=RelationalQueryProcessor, creatorName='Raimondi, Giuseppe'))
 # print(RelationalQueryProcessor.getAnnotationsWithBodyAndTarget(self=RelationalQueryProcessor, bodyId="https://dl.ficlit.unibo.it/iiif/2/45500/full/699,800/0/default.jpg", targetId="https://dl.ficlit.unibo.it/iiif/2/28429/canvas/p3"))
