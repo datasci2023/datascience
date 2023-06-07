@@ -1,13 +1,14 @@
 from pandas import DataFrame
-from processor import Processor
-from queryProcessor import QueryProcessor
+from processorTemp import Processor
+from queryProcessor1 import QueryProcessor
 import pandas as pd
 from sqlite3 import connect
 from pandas import read_sql
 
 class RelationalQueryProcessor(QueryProcessor):
-    def __init__(self, entityId):
-        super().__init__(entityId)
+    def __init__(self):
+        pass
+        # I eliminated entityId as parameter because I don't think it is but check
     
     def getAllAnnotations (self):
         with connect("relationaldatabase.db") as con:
@@ -30,7 +31,7 @@ class RelationalQueryProcessor(QueryProcessor):
             """
             cursor = con.cursor()
             cursor.execute(query, (bodyId,))
-            df_sql = cursor.fetchall()
+            df_sql = read_sql(query, con, params=(bodyId,))
             return df_sql
     
     def getAnnotationsWithBodyAndTarget(self, bodyId: str, targetId: str):
@@ -43,7 +44,7 @@ class RelationalQueryProcessor(QueryProcessor):
             """
             cursor = con.cursor()
             cursor.execute(query, (bodyId, targetId))
-            df_sql = cursor.fetchall()
+            df_sql = read_sql(query, con, params=(bodyId, targetId))
             return df_sql
 
     def getAnnotationsWithTarget(self, targetId: str):
@@ -55,7 +56,7 @@ class RelationalQueryProcessor(QueryProcessor):
             """
             cursor = con.cursor()
             cursor.execute(query, (targetId,))
-            df_sql = cursor.fetchall()
+            df_sql = read_sql(query, con, params=(targetId,))
             return df_sql    
     
     def getEntitiesWithTitle(self, title: str):
@@ -63,13 +64,24 @@ class RelationalQueryProcessor(QueryProcessor):
             query = "SELECT * FROM EntitiesWithMetadata WHERE title = ?"
             cursor = con.cursor()
             cursor.execute(query, (title,))
-            df_sql = cursor.fetchall()
+            df_sql = read_sql(query, con, params=(title,))
             return df_sql
     
     def getEntitiesWithCreator(self, creatorName: str):
         with connect("relationaldatabase.db") as con:
-            query = "SELECT * FROM EntitiesWithMetadata WHERE creator = ?"
+            query = """
+            SELECT * FROM EntitiesWithMetadata
+            JOIN Creators ON EntitiesWithMetadata.creator == Creators.creator_internal_id 
+            WHERE Creators.creator = ?
+            """
             cursor = con.cursor()
             cursor.execute(query, (creatorName,))
-            df_sql = cursor.fetchall()
+            df_sql = read_sql(query, con, params=(creatorName,))
             return df_sql
+        
+
+
+# print(RelationalQueryProcessor.getEntitiesWithCreator(self=RelationalQueryProcessor, creatorName='Raimondi, Giuseppe'))
+# print(RelationalQueryProcessor.getAnnotationsWithBodyAndTarget(self=RelationalQueryProcessor, bodyId="https://dl.ficlit.unibo.it/iiif/2/45500/full/699,800/0/default.jpg", targetId="https://dl.ficlit.unibo.it/iiif/2/28429/canvas/p3"))
+# print(RelationalQueryProcessor.getAnnotationsWithBody(self=RelationalQueryProcessor, bodyId="https://dl.ficlit.unibo.it/iiif/2/45500/full/699,800/0/default.jpg"))
+# All queries tested, it should work
