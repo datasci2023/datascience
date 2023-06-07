@@ -9,13 +9,15 @@ import pandas as pd
 class MetadataProcessor(Processor):
     def __init__(self, dbPathOrUrl : str):
         super(Processor).__init__(dbPathOrUrl)
-        # self.dbPathOrUrl = None
+        # self.dbPathOrUrl = None 
+        # Should we put here the path of the database?
 
     def uploadData(self, path):
         try:
             with connect("relationaldatabase.db") as con:
 
                 path = read_csv("C:\\Users\\chiar\\Documents\\GitHub\\datascience\\metadata.csv",
+                                # should we put here the generic variable 'path'?
                                 keep_default_na=False,
                                 dtype={
                                     "id": "string",
@@ -45,7 +47,9 @@ class MetadataProcessor(Processor):
                     creator = row["creator"]
                     
                     if creator in internal_id_dict:
-                        creator_internal_id.append(internal_id_dict[creator])
+                        creators_def.drop(idx, inplace=True)
+                        # The option inplace=True assures that the change is applied directly to the DataFrame
+                        # without creating a new object DataFrame
                     else:
                         internal_id = "creator-" + str(len(internal_id_dict))
                         creator_internal_id.append(internal_id)
@@ -65,14 +69,25 @@ class MetadataProcessor(Processor):
                 # Expansion of the column in separate rows
                 metadata_entities = metadata_entities.reset_index(drop=True)
                 # Update of the index; " drop=True " removes the previous index without creating a new column with the previous index
-                #metadata_entities["creator"] = metadata_entities["creator"].replace(creators.set_index("creator")["creator_internal_id"])
-                # Check whether it's better to use .replace or .merge
+                metadata_merged = merge(metadata_entities, creators_def, on="creator", how="left")
+                # Merge EntitiesWithMetadata table with Creators table, using as key the column "creator"
+                metadata_def = metadata_merged[["id", "title", "creator_internal_id"]]
+                # Keep only the columns we need
+                metadata_def = metadata_def.rename(columns={"creator_internal_id": "creator"})
+                internal_id_dict1 = {}
                 metadata_internal_id = []
-                for idx, row in metadata_entities.iterrows():
-                        metadata_internal_id.append("metadata-" + str(idx))
-                metadata_entities.insert(0,"metadata_internal_id", Series(metadata_internal_id, dtype= "string")) 
+                for idx, row in metadata_def.iterrows():
+                    entity = row["id"]
+                    
+                    if entity in internal_id_dict1:
+                        metadata_internal_id.append(internal_id_dict1[entity])
+                    else:
+                        internal_id1 = "metadata-" + str(len(internal_id_dict1))
+                        metadata_internal_id.append(internal_id1)
+                        internal_id_dict1[entity] = internal_id1
+                metadata_def.insert(0,"metadata_internal_id", Series(metadata_internal_id, dtype= "string")) 
 
-                metadata_entities.to_sql("EntitiesWithMetadata", con, if_exists="replace", index=False)
+                metadata_def.to_sql("EntitiesWithMetadata", con, if_exists="replace", index=False)
                 creators_def.to_sql("Creators", con, if_exists="replace", index=False) 
 
                 con.commit()
@@ -80,7 +95,7 @@ class MetadataProcessor(Processor):
                 return True
 
         except Exception as e:
-            print("Errore durante il commit delle modifiche:")
+            print("Error during the commit of the following changes:")
             print(e)
             return False
            
@@ -186,6 +201,7 @@ class AnnotationProcessor(Processor):
                 return True
 
         except Exception as e:
+            print("Error during the commit of the following changes:")
             print(e)
             return False
         
