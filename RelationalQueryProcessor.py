@@ -1,6 +1,6 @@
 from pandas import DataFrame
-from processorTemp import Processor
-from queryProcessor1 import QueryProcessor
+from processor import Processor
+from queryProcessor import QueryProcessor
 import pandas as pd
 from sqlite3 import connect
 from pandas import read_sql
@@ -86,7 +86,8 @@ class RelationalQueryProcessor(QueryProcessor):
             return df_sql
         
 
-# print(RelationalQueryProcessor.getEntitiesWithCreator(self=RelationalQueryProcessor, creatorName='Raimondi, Giuseppe'))
+
+
 # print(RelationalQueryProcessor.getAnnotationsWithBodyAndTarget(self=RelationalQueryProcessor, bodyId="https://dl.ficlit.unibo.it/iiif/2/45500/full/699,800/0/default.jpg", targetId="https://dl.ficlit.unibo.it/iiif/2/28429/canvas/p3"))
 # print(RelationalQueryProcessor.getAnnotationsWithBody(self=RelationalQueryProcessor, bodyId="https://dl.ficlit.unibo.it/iiif/2/45500/full/699,800/0/default.jpg"))
 # All queries tested, it should work

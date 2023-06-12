@@ -205,6 +205,6 @@ class AnnotationProcessor(Processor):
             print(e)
             return False
         
-MetadataProcessor.uploadData(self=MetadataProcessor, path="C:\\Users\\chiar\\Documents\\GitHub\\datascience\\metadata.csv")
-AnnotationProcessor.load_dataframe_from_db(self=AnnotationProcessor)
-AnnotationProcessor.uploadData(self=AnnotationProcessor, path2="C:\\Users\\chiar\\Documents\\GitHub\\datascience\\annotations.csv")
+# MetadataProcessor.uploadData(self=MetadataProcessor, path="C:\\Users\\chiar\\Documents\\GitHub\\datascience\\metadata.csv")
+# AnnotationProcessor.load_dataframe_from_db(self=AnnotationProcessor)
+# AnnotationProcessor.uploadData(self=AnnotationProcessor, path2="C:\\Users\\chiar\\Documents\\GitHub\\datascience\\annotations.csv")
