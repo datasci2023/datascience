@@ -59,9 +59,6 @@ class CollectionProcessor(Processor):
         items = URIRef("https://github.com/datasci2023/datascience/attr/items")
 
         # create and add triples starting from the collection
-        # subject = URIRef(json_doc["id"])
-        # # what is the smartest way to define the subject
-        graph.add((URIRef(json_doc["id"]), id, Literal(json_doc["id"])))
         # for URIs, check how peroni defined base and generic URIs in hon#05
         graph.add((URIRef(json_doc["id"]), RDF.type, Collection))
         graph.add(
@@ -69,9 +66,7 @@ class CollectionProcessor(Processor):
         )  # find a way to add label
 
         for manifest in json_doc["items"]:
-            # subject = URIRef(manifest["id"])
             graph.add((URIRef(json_doc["id"]), items, URIRef(manifest["id"])))
-            graph.add((URIRef(manifest["id"]), id, Literal(manifest["id"])))
             graph.add((URIRef(manifest["id"]), RDF.type, Manifest))
             graph.add(
                 (
@@ -83,7 +78,6 @@ class CollectionProcessor(Processor):
 
             for canvas in manifest["items"]:
                 graph.add((URIRef(manifest["id"]), items, URIRef(canvas["id"])))
-                graph.add((URIRef(canvas["id"]), id, Literal(canvas["id"])))
                 graph.add((URIRef(canvas["id"]), RDF.type, Canvas))
                 graph.add(
                     (

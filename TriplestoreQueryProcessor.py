@@ -1,13 +1,12 @@
 from pandas import DataFrame
 from queryProcessor import QueryProcessor
-
-from pandas.io.json import json_normalize
-from SPARQLWrapper import SPARQLWrapper, JSON
+from sparql_dataframe import get
+from rdflib import Graph, Literal, RDF, RDFS, URIRef
 
 
 class TriplestoreQueryProcessor(QueryProcessor):
-    def __init__(self, entityId):
-        super().__init__(entityId)
+    def __init__(self):
+        super().__init__()
 
     def getAllCanvases(self) -> DataFrame:
         endpoint = self.getDbPathOrUrl()
@@ -15,19 +14,14 @@ class TriplestoreQueryProcessor(QueryProcessor):
         PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
         PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
         PREFIX p1: <https://github.com/datasci2023/datascience/res/>
-        PREFIX p2: <https://github.com/datasci2023/datascience/attr/>
-        SELECT ?id ?literal_id ?label
+        SELECT ?id ?label
         WHERE {
-            ?id p2:id ?literal_id;
-                rdf:type p1:Canvas;
+            ?id rdf:type p1:Canvas;
                 rdfs:label ?label .
         }
         """
-        sparql = SPARQLWrapper(endpoint)
-        sparql.setQuery(query)
-        sparql.setReturnFormat(JSON)
-        result = sparql.query().convert()
-        return json_normalize(result)  # ???
+        df_sparql = get(endpoint, query, True)
+        return df_sparql
 
     def getAllCollections(self) -> DataFrame:
         endpoint = self.getDbPathOrUrl()
@@ -36,19 +30,14 @@ class TriplestoreQueryProcessor(QueryProcessor):
         PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
         PREFIX p1: <https://github.com/datasci2023/datascience/res/>
         PREFIX p2: <https://github.com/datasci2023/datascience/attr/>
-        SELECT ?id ?literal_id ?label ?items
+        SELECT ?id ?label ?items
         WHERE {
-            ?id p2:id ?literal_id;
-                rdf:type p1:Collection;
-                rdfs:label ?label;
-                p2:items ?items .
+            ?id rdf:type p1:Collection;
+                rdfs:label ?label .
         }
         """
-        sparql = SPARQLWrapper(endpoint)
-        sparql.setQuery(query)
-        sparql.setReturnFormat(JSON)
-        result = sparql.query().convert()
-        return json_normalize(result["type"]["collection"])  # ???
+        df_sparql = get(endpoint, query, True)
+        return df_sparql
 
     def getAllManifests(self) -> DataFrame:
         endpoint = self.getDbPathOrUrl()
@@ -57,19 +46,14 @@ class TriplestoreQueryProcessor(QueryProcessor):
         PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
         PREFIX p1: <https://github.com/datasci2023/datascience/res/>
         PREFIX p2: <https://github.com/datasci2023/datascience/attr/>
-        SELECT ?id ?literal_id ?label ?items
+        SELECT ?id ?label
         WHERE {
-            ?id p2:id ?literal_id;
-                rdf:type p1:Manifest;
-                rdfs:label ?label;
-                p2:items ?items .
-        }
+            ?id rdf:type p1:Manifest;
+                rdfs:label ?label . 
+                }
         """
-        sparql = SPARQLWrapper(endpoint)
-        sparql.setQuery(query)
-        sparql.setReturnFormat(JSON)
-        result = sparql.query().convert()
-        return json_normalize(result["type"]["manifest"])  # ???
+        df_sparql = get(endpoint, query, True)
+        return df_sparql
 
     def getCanvasesInCollection(self, collectionId: str) -> DataFrame:
         endpoint = self.getDbPathOrUrl()
@@ -79,28 +63,23 @@ class TriplestoreQueryProcessor(QueryProcessor):
         PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
         PREFIX p1: <https://github.com/datasci2023/datascience/res/>
         PREFIX p2: <https://github.com/datasci2023/datascience/attr/>
-        SELECT ?collection_id ?manifest_id ?canvas_id ?literal_collection_id ?literal_canvas_id ?label 
+        SELECT ?canvas_id ?collection_id ?id ?manifest_id ?label 
         WHERE {
-            ?literal_collection_id a \""""
+            ?id a '"""
             + collectionId
-            + """\" .
-            ?collection_id p2:id ?literal_collection_id;
-                rdf:type Collection  #####can make this faster
+            + """'.
+            ?collection_id rdf:type Collection;
                 p2:items ?manifest_id .
             ?manifest_id p2:items ?canvas_id .
-            ?canvas_id p2:id ?literal_canvas_id;
-                rdf:type p1:Canvas;
+            ?canvas_id rdf:type p1:Canvas;
                 rdfs:label ?label .                
         }
         """
         )
-        sparql = SPARQLWrapper(endpoint)
-        sparql.setQuery(query)
-        sparql.setReturnFormat(JSON)
-        result = sparql.query().convert()
-        return json_normalize(result)  # ???
+        df_sparql = get(endpoint, query, True)
+        return df_sparql
 
-    def getCanvasesInManifest(self, query, endpoint, manifestId: str) -> DataFrame:
+    def getCanvasesInManifest(self, manifestId: str) -> DataFrame:
         endpoint = self.getDbPathOrUrl()
         query = (
             """
@@ -108,24 +87,19 @@ class TriplestoreQueryProcessor(QueryProcessor):
         PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
         PREFIX p1: <https://github.com/datasci2023/datascience/res/>
         PREFIX p2: <https://github.com/datasci2023/datascience/attr/>
-        SELECT ?manifest_id ?canvas_id ?literal_manifest_id ?literal_canvas_id ?label 
+        SELECT ?canvas_id ?id ?manifest_id ?label 
         WHERE {
-            ?literal_manifest_id a \""""
+            ?id a '"""
             + manifestId
-            + """\" .
-            ?manifest_id p2:id ?literal_manifest_id;
-                p2:items ?canvas_id .
-            ?canvas_id p2:id ?literal_canvas_id;
-                rdf:type p1:Canvas;
+            + """'.
+            ?manifest_id p2:items ?canvas_id .
+            ?canvas_id rdf:type p1:Canvas;
                 rdfs:label ?label .                
         }
         """
         )
-        sparql = SPARQLWrapper(endpoint)
-        sparql.setQuery(query)
-        sparql.setReturnFormat(JSON)
-        result = sparql.query().convert()
-        return json_normalize(result)  # ???
+        df_sparql = get(endpoint, query, True)
+        return df_sparql
 
     def getEntitiesWithLabel(self, label: str) -> DataFrame:
         endpoint = self.getDbPathOrUrl()
@@ -136,40 +110,19 @@ class TriplestoreQueryProcessor(QueryProcessor):
         PREFIX p1: <https://github.com/datasci2023/datascience/res/>
         PREFIX p2: <https://github.com/datasci2023/datascience/attr/>
         SELECT ?id ?items ?type
-        WHERE {
-            ?label a \""""
+        WHERE {?id rdfs:label '"""
             + label
-            + """\" .
-            ?id rdfs:label ?label;
+            + """';
                 rdf:type ?type .
             OPTIONAL { ?id p2:items ?items}
         }
         """
         )
-        # query = (
-        #     """
-        # PREFIX rdf ???
-        # PREFIX rdfs
-        # PREFIX p1: <https://github.com/datasci2023/datascience/res/>
-        # PREFIX p2: <https://github.com/datasci2023/datascience/attr/>
-        # SELECT ?collection_id ?manifest_id ?canvas_id ?literal_id ?label
-        # WHERE {
-        #     ?collection_id rdfs:label \""""
-        #     + label
-        #     + """\" ;
-        #         p2:id ?literal_collection_id;
-        #         rdf:type p1:Collection;
-        #         p2:items ?manifest_id .
-        # }
-        # """
-        # )
-        sparql = SPARQLWrapper(endpoint)
-        sparql.setQuery(query)
-        sparql.setReturnFormat(JSON)
-        result = sparql.query().convert()
-        return json_normalize(result)  # ???
 
-    def getManifestsInCollection(self, collectionId: str) -> DataFrame:
+        df_sparql = get(endpoint, query, True)
+        return df_sparql
+
+    def getManifestsInCollection(self, collectionId) -> DataFrame:
         endpoint = self.getDbPathOrUrl()
         query = (
             """
@@ -177,22 +130,14 @@ class TriplestoreQueryProcessor(QueryProcessor):
         PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
         PREFIX p1: <https://github.com/datasci2023/datascience/res/>
         PREFIX p2: <https://github.com/datasci2023/datascience/attr/>
-        SELECT ?collection_id ?manifest_id ?canvas_id ?literal_collection_id ?literal_manifest_id ?label 
-        WHERE {
-            ?literal_collection_id a \""""
-            + collectionId
-            + """\" .
-            ?collection_id p2:id ?literal_collection_id;
-                p2:items ?manifest_id .
-            ?manifest_id p2:id ?literal_manifest_id;
-                rdf:type p1:Manifest;
-                rdfs:label ?label;
-                p2:items ?canvas_id.                
+        SELECT ?manifest_id
+        WHERE { ?id p2:items ?manifest_id . 
+                FILTER ( ?id = <%s> ) 
+                      
         }
         """
+            % collectionId
         )
-        sparql = SPARQLWrapper(endpoint)
-        sparql.setQuery(query)
-        sparql.setReturnFormat(JSON)
-        result = sparql.query().convert()
-        return json_normalize(result)  # ???
+
+        df_sparql = get(endpoint, query, True)
+        return df_sparql
