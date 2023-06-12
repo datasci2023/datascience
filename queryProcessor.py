@@ -2,8 +2,7 @@ from processor import Processor
 from sqlite3 import connect
 from pandas import read_sql, read_sql_query
 
-from pandas.io.json import json_normalize
-from SPARQLWrapper import SPARQLWrapper, JSON
+from sparql_dataframe import get
 
 
 class QueryProcessor(Processor):
@@ -39,18 +38,15 @@ class QueryProcessor(Processor):
             PREFIX p2: <https://github.com/datasci2023/datascience/attr/>
             SELECT ?id ?items ?type ?label 
             WHERE {
-                ?literal_id a \""""
-                + entityId
-                + """\" .
-                ?id p2:id ?literal_id;
-                    rdf:type ?type ;
+                ?id a '"""
+                + str(entityId)
+                + """' .
+                ?id rdf:type ?type ;
                     rdfs:label ?label .
                 OPTIONAL { ?id p2:items ?items}
             }
             """
             )
-            sparql = SPARQLWrapper(endpoint)
-            sparql.setQuery(query)
-            sparql.setReturnFormat(JSON)
-            result = sparql.query().convert()
-            return json_normalize(result)  # ???
+
+            df_sparql = get(endpoint, query, True)
+            return df_sparql
