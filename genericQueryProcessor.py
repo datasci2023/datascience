@@ -1,4 +1,4 @@
-from pandas import DataFrame, merge
+from pandas import DataFrame, merge, concat
 from RelationalQueryProcessor import *
 from TriplestoreQueryProcessor import *
 from queryProcessor import QueryProcessor
@@ -52,17 +52,22 @@ class GenericQueryProcessor:
 
     def getCanvasesInCollection(self):
         result = list()
-        df = DataFrame()
+        df_graph = DataFrame()
+        df_rel = DataFrame()
         joined_df = DataFrame()
 
         for processor in self.queryProcessor:
+            if isinstance(processor, TriplestoreQueryProcessor):
+                df_graph = processor.getCanvasesInCollection()
+
+        for processor in self.queryProcessor:
             if isinstance(processor, RelationalQueryProcessor):
-                df = processor.getAllEntities()
-            elif isinstance(processor, TriplestoreQueryProcessor):
-                df = processor.getEntitiesWithLabel()
+                for idx, row in df_graph.iterrows():
+                    df_rel.append(processor.getEntitybyId(row[id]))
+                    # joined_df.append(df_rel)
 
         joined_df = (
-            merge(joined_df, df, left_on="id", right_on="id")
+            merge(df_rel, df_graph, left_on="id", right_on="id")
             .fillna("")
             .drop_duplicates()
         )
@@ -75,7 +80,7 @@ class GenericQueryProcessor:
 
         return result
 
-    def getCanvasesInManifest():
+    def getCanvasesInManifest(self):
         result = list()
         df = DataFrame()
         joined_df = DataFrame()
@@ -109,7 +114,7 @@ class GenericQueryProcessor:
             if isinstance(processor, RelationalQueryProcessor):
                 df = processor.getAllEntities()
             elif isinstance(processor, TriplestoreQueryProcessor):
-                df = processor.getEntitiesWithLabel()
+                df = processor.getEntitiesWithLabel(label)
             # rethink the else case
 
             joined_df = (
