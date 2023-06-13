@@ -63,11 +63,11 @@ class RelationalQueryProcessor(QueryProcessor):
             cursor = con.cursor()
             cursor.execute(query, (targetId,))
             df_sql = read_sql(query, con, params=(targetId,))
-            return df_sql    
+            return df_sql   
     
     def getEntitiesWithTitle(self, title: str):
         with connect("relationaldatabase.db") as con:
-            query = "SELECT * FROM EntitiesWithMetadata WHERE title = ?"
+            query = f"SELECT * FROM EntitiesWithMetadata WHERE title = {title}"
             cursor = con.cursor()
             cursor.execute(query, (title,))
             df_sql = read_sql(query, con, params=(title,))
@@ -84,6 +84,19 @@ class RelationalQueryProcessor(QueryProcessor):
             cursor.execute(query, (creatorName,))
             df_sql = read_sql(query, con, params=(creatorName,))
             return df_sql
+    
+    def getImagesWithTarget(self, targetId: str):
+        with connect("relationaldatabase.db") as con:
+            query = f"""
+            SELECT Images.image_ids FROM 'Images'
+            LEFT JOIN 'Annotations' ON Images.images_internal_id == Annotations.annotation_bodies
+            LEFT JOIN 'EntitiesWithMetadata' ON Annotations.annotation_targets == EntitiesWithMetadata.metadata_internal_id
+            WHERE EntitiesWithMetadata.id = {targetId}
+            """
+            df_sql = read_sql(query, con)
+            return df_sql
+    
+    
         
 
 
