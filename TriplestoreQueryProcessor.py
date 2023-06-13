@@ -129,7 +129,7 @@ class TriplestoreQueryProcessor(QueryProcessor):
         WHERE { 
             ?id rdfs:label ?label;
                 rdf:type ?type .
-            FILTER ( ?label = <%s> ) 
+            FILTER ( ?label = "%s" ) 
         }
         """
             % label

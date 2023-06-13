@@ -1,3 +1,4 @@
+import os
 from processor import Processor
 from sqlite3 import connect
 from pandas import read_sql, read_sql_query
@@ -15,7 +16,7 @@ class QueryProcessor(Processor):
 
         path = self.getDbPathOrUrl()
 
-        if self.dbPathOrUrl:  # dummy condition
+        if os.path.isfile(path) or path.endswith(".db"):
             with connect(self.dbPathOrUrl) as con:
                 query = f"""
                 SELECT * FROM EntitiesWithMetadata
@@ -29,21 +30,22 @@ class QueryProcessor(Processor):
                 df = read_sql_query(query, con, params=(entityId, entityId, entityId))
                 df = read_sql(query, con)
                 return df
-        else:
+        elif path.startswith("https:") or path.startswith("http:"):
             endpoint = self.getDbPathOrUrl()
             query = (
                 (
                     """
             PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
             PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-            PREFIX p1: <https://github.com/datasci2023/datascience/res/>
-            PREFIX p2: <https://github.com/datasci2023/datascience/attr/>
-            SELECT ?id ?items ?type ?label 
+            PREFIX pomodoro: <https://github.com/datasci2023/datascience/class/>
+            PREFIX feslegen: <https://github.com/datasci2023/datascience/attribute/>
+            PREFIX spaghetti:  <https://github.com/datasci2023/datascience/relation/>
+        
+            SELECT ?id ?type ?label 
             WHERE {
-                ?id a <%s> .
                 ?id rdf:type ?type ;
                     rdfs:label ?label .
-                FILTER ()
+                FILTER (?id = <%s>)
             }
             """
                 )
