@@ -7,17 +7,14 @@ import pandas as pd
 
 
 class MetadataProcessor(Processor):
-    def __init__(self, dbPathOrUrl : str):
-        super(Processor).__init__(dbPathOrUrl)
-        # self.dbPathOrUrl = None 
-        # Should we put here the path of the database?
+    def __init__(self):
+        super().__init__()
 
     def uploadData(self, path):
         try:
-            with connect("relationaldatabase.db") as con:
+            with connect(self.dbPathOrUrl) as con:
 
-                path = read_csv("C:\\Users\\chiar\\Documents\\GitHub\\datascience\\metadata.csv",
-                                # should we put here the generic variable 'path'?
+                path = read_csv(path,
                                 keep_default_na=False,
                                 dtype={
                                     "id": "string",
@@ -100,24 +97,23 @@ class MetadataProcessor(Processor):
             return False
            
 class AnnotationProcessor(Processor):
-    def __init__(self, dbPathOrUrl : str):
-        super(Processor).__init__(dbPathOrUrl)
-        # self.dbPathOrUrl = None
+    def __init__(self):
+        super().__init__()
     
-    def load_dataframe_from_db(self):
-        if "relationaldatabase.db":
-            with connect("relationaldatabase.db") as con:
+    def load_dataframe_from_db(self, dbPathOrUrl : str):
+            with connect(dbPathOrUrl) as con:
                 query = "SELECT * FROM EntitiesWithMetadata"
                 metadata_temp = pd.read_sql_query(query, con)
                 return metadata_temp
                 # Load EntityWithMetadata dataframe from the database so that it can be merged with dataframes created with uploadData method   
+                # Check again if this is the best method to do this
 
     def uploadData(self, path2):            
         try:
             metadata_temp = self.load_dataframe_from_db(self=AnnotationProcessor)        
-            with connect("relationaldatabase.db") as con:
+            with connect(self.dbPathOrUrl) as con:
             #ANNOTATION TABLE
-                path2 = read_csv('C:\\Users\\chiar\\Documents\\GitHub\\datascience\\annotations.csv', # path has to be updated to a generic path
+                path2 = read_csv(path2,
                                 keep_default_na=False,
                                 dtype={
                                     "id": "string",
@@ -205,6 +201,3 @@ class AnnotationProcessor(Processor):
             print(e)
             return False
         
-# MetadataProcessor.uploadData(self=MetadataProcessor, path="C:\\Users\\chiar\\Documents\\GitHub\\datascience\\metadata.csv")
-# AnnotationProcessor.load_dataframe_from_db(self=AnnotationProcessor)
-# AnnotationProcessor.uploadData(self=AnnotationProcessor, path2="C:\\Users\\chiar\\Documents\\GitHub\\datascience\\annotations.csv")
