@@ -7,87 +7,86 @@ from pandas import read_sql
 
 class RelationalQueryProcessor(QueryProcessor):
     def __init__(self):
-        pass
-        # I eliminated entityId as parameter because I don't think it is but check
+        super().__init__()
     
     def getAllAnnotations (self):
-        with connect("relationaldatabase.db") as con:
+        with connect(self.dbPathOrUrl) as con:
             query = "SELECT * FROM Annotations"
             df_sql = read_sql(query, con)
             return df_sql
     
     def getAllImages (self):
-        with connect("relationaldatabase.db") as con:
+        with connect(self.dbPathOrUrl) as con:
             query = "SELECT * FROM Images"
             df_sql = read_sql(query, con)
             return df_sql
     
     def getAllEntites(self):
-        with connect("relationaldatabase.db") as con:
+        with connect(self.dbPathOrUrl) as con:
             query = "SELECT * FROM EntitiesWithMetadata"
             df_sql = read_sql(query, con)
             return df_sql
     
     def getAnnotationsWithBody(self, bodyId: str):
-        with connect("relationaldatabase.db") as con:
-            query = """
+        with connect(self.dbPathOrUrl) as con:
+            query = f"""
             SELECT annotation_ids FROM Annotations
             JOIN Images ON Annotations.annotation_bodies == Images.images_internal_id
-            WHERE image_ids = ?
+            WHERE image_ids = '{bodyId}'
             """
-            cursor = con.cursor()
-            cursor.execute(query, (bodyId,))
-            df_sql = read_sql(query, con, params=(bodyId,))
+            df_sql = read_sql(query, con)
             return df_sql
     
     def getAnnotationsWithBodyAndTarget(self, bodyId: str, targetId: str):
-        with connect("relationaldatabase.db") as con:
-            query = """
+        with connect(self.dbPathOrUrl) as con:
+            query = f"""
             SELECT annotation_ids FROM Annotations
             JOIN Images ON Annotations.annotation_bodies == Images.images_internal_id 
             JOIN EntitiesWithMetadata ON Annotations.annotation_targets == EntitiesWithMetadata.metadata_internal_id
-            WHERE image_ids = ? AND id = ?
+            WHERE image_ids = '{bodyId}' AND id = '{targetId}'
             """
-            cursor = con.cursor()
-            cursor.execute(query, (bodyId, targetId))
-            df_sql = read_sql(query, con, params=(bodyId, targetId))
+            df_sql = read_sql(query, con)
             return df_sql
 
     def getAnnotationsWithTarget(self, targetId: str):
-        with connect("relationaldatabase.db") as con:
-            query = """
+        with connect(self.dbPathOrUrl) as con:
+            query = f"""
             SELECT annotation_ids FROM Annotations
             JOIN EntitiesWithMetadata ON Annotations.annotation_targets == EntitiesWithMetadata.metadata_internal_id
-            WHERE id = ?
+            WHERE id = '{targetId}'
             """
-            cursor = con.cursor()
-            cursor.execute(query, (targetId,))
-            df_sql = read_sql(query, con, params=(targetId,))
-            return df_sql    
+            df_sql = read_sql(query, con)
+            return df_sql   
     
     def getEntitiesWithTitle(self, title: str):
-        with connect("relationaldatabase.db") as con:
-            query = "SELECT * FROM EntitiesWithMetadata WHERE title = ?"
-            cursor = con.cursor()
-            cursor.execute(query, (title,))
-            df_sql = read_sql(query, con, params=(title,))
-            return df_sql
+        with connect(self.dbPathOrUrl) as con:
+            query = f"SELECT * FROM EntitiesWithMetadata WHERE title = '{title}'"
+            df_sql = read_sql(query, con)
+            return df_sql  
     
     def getEntitiesWithCreator(self, creatorName: str):
-        with connect("relationaldatabase.db") as con:
-            query = """
+        with connect(self.dbPathOrUrl) as con:
+            query = f"""
             SELECT * FROM EntitiesWithMetadata
             JOIN Creators ON EntitiesWithMetadata.creator == Creators.creator_internal_id 
-            WHERE Creators.creator = ?
+            WHERE Creators.creator = '{creatorName}'
             """
-            cursor = con.cursor()
-            cursor.execute(query, (creatorName,))
-            df_sql = read_sql(query, con, params=(creatorName,))
+            df_sql = read_sql(query, con)
             return df_sql
+    
+    def getImagesWithTarget(self, targetId: str):
+        with connect(self.dbPathOrUrl) as con:
+            query = f"""
+            SELECT Images.image_ids FROM Images
+            LEFT JOIN Annotations ON Images.images_internal_id == Annotations.annotation_bodies
+            LEFT JOIN EntitiesWithMetadata ON Annotations.annotation_targets == EntitiesWithMetadata.metadata_internal_id
+            WHERE EntitiesWithMetadata.id = '{targetId}'
+            """
+            df_sql = read_sql(query, con)
+            return df_sql
+    
+    
         
 
 
 
-# print(RelationalQueryProcessor.getAnnotationsWithBodyAndTarget(self=RelationalQueryProcessor, bodyId="https://dl.ficlit.unibo.it/iiif/2/45500/full/699,800/0/default.jpg", targetId="https://dl.ficlit.unibo.it/iiif/2/28429/canvas/p3"))
-# print(RelationalQueryProcessor.getAnnotationsWithBody(self=RelationalQueryProcessor, bodyId="https://dl.ficlit.unibo.it/iiif/2/45500/full/699,800/0/default.jpg"))
-# All queries tested, it should work

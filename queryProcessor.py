@@ -1,7 +1,6 @@
 from processor import Processor
 from sqlite3 import connect
 from pandas import read_sql, read_sql_query
-
 from sparql_dataframe import get
 
 
@@ -18,12 +17,12 @@ class QueryProcessor(Processor):
 
         if self.dbPathOrUrl:  # dummy condition
             with connect(self.dbPathOrUrl) as con:
-                query = """
+                query = f"""
                 SELECT * FROM EntitiesWithMetadata
                 FULL OUTER JOIN Annotations ON EntitiesWithMetadata.metadata_internal_id = Annotations.annotation_targets
                 FULL OUTER JOIN Images ON Annotations.annotation_bodies = Images.images_internal_id
                 FULL OUTER JOIN Creators ON EntitiesWithMetadata.creator = Creators.creator_internal_id
-                WHERE EntitiesWithMetadata.id = ? OR Annotations.annotation_ids = ? OR Images.image_ids = ?
+                WHERE EntitiesWithMetadata.id = '{entityId}' OR Annotations.annotation_ids = '{entityId}' OR Images.image_ids = '{entityId}'
                 """
                 cursor = con.cursor()
                 cursor.execute(query, (entityId, entityId, entityId))
