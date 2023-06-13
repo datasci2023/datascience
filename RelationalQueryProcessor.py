@@ -30,7 +30,7 @@ class RelationalQueryProcessor(QueryProcessor):
     def getAnnotationsWithBody(self, bodyId: str):
         with connect(self.dbPathOrUrl) as con:
             query = f"""
-            SELECT annotation_ids FROM Annotations
+            SELECT * FROM Annotations
             JOIN Images ON Annotations.annotation_bodies == Images.images_internal_id
             WHERE image_ids = '{bodyId}'
             """
@@ -40,7 +40,7 @@ class RelationalQueryProcessor(QueryProcessor):
     def getAnnotationsWithBodyAndTarget(self, bodyId: str, targetId: str):
         with connect(self.dbPathOrUrl) as con:
             query = f"""
-            SELECT annotation_ids FROM Annotations
+            SELECT * FROM Annotations
             JOIN Images ON Annotations.annotation_bodies == Images.images_internal_id 
             JOIN EntitiesWithMetadata ON Annotations.annotation_targets == EntitiesWithMetadata.metadata_internal_id
             WHERE image_ids = '{bodyId}' AND id = '{targetId}'
@@ -51,7 +51,7 @@ class RelationalQueryProcessor(QueryProcessor):
     def getAnnotationsWithTarget(self, targetId: str):
         with connect(self.dbPathOrUrl) as con:
             query = f"""
-            SELECT annotation_ids FROM Annotations
+            SELECT * FROM Annotations
             JOIN EntitiesWithMetadata ON Annotations.annotation_targets == EntitiesWithMetadata.metadata_internal_id
             WHERE id = '{targetId}'
             """
@@ -77,7 +77,7 @@ class RelationalQueryProcessor(QueryProcessor):
     def getImagesWithTarget(self, targetId: str):
         with connect(self.dbPathOrUrl) as con:
             query = f"""
-            SELECT Images.image_ids FROM Images
+            SELECT * FROM Images
             LEFT JOIN Annotations ON Images.images_internal_id == Annotations.annotation_bodies
             LEFT JOIN EntitiesWithMetadata ON Annotations.annotation_targets == EntitiesWithMetadata.metadata_internal_id
             WHERE EntitiesWithMetadata.id = '{targetId}'
