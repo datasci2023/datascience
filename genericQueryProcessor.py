@@ -1,6 +1,7 @@
 from pandas import DataFrame, merge, concat
-from RelationalQueryProcessor import *
-from TriplestoreQueryProcessor import *
+from processor import Processor
+from RelationalQueryProcessor import RelationalQueryProcessor
+from TriplestoreQueryProcessor import TriplestoreQueryProcessor
 from queryProcessor import QueryProcessor
 from data_model import *
 
@@ -19,46 +20,13 @@ class GenericQueryProcessor:
 
     def getAllCanvas(self):
         result = list()
-        df = DataFrame()
-        joined_df = DataFrame()
-
-        for processor in self.queryProcessor:
-            if isinstance(processor, RelationalQueryProcessor):
-                df = processor.getAllEntities()
-            elif isinstance(processor, TriplestoreQueryProcessor):
-                df = processor.getEntitiesWithLabel()
-            # rethink the else case
-
-            joined_df = (
-                merge(joined_df, df, left_on="id", right_on="id")
-                .fillna("")
-                .drop_duplicates()
-            )
-
-        # joined_df["creator"] = joined_df.groupby(
-        #     ["canvas", "id", "label", "entityId", "title"]
-        # )["creator"].transform(lambda x: "; ".join(x))
-        # joined_df = joined_df[
-        #     ["canvas", "id", "label", "title", "creator"]
-        # ].drop_duplicates()
-
-        for idx, row in joined_df.iterrows():
-            entity = Canvas(
-                row["id"], row["label"], row["title"], row["creators"]
-            ).fillna("")
-            result.append(entity)
-
-        return result
-
-    def getCanvasesInCollection(self):
-        result = list()
         df_graph = DataFrame()
         df_rel = DataFrame()
         joined_df = DataFrame()
 
         for processor in self.queryProcessor:
             if isinstance(processor, TriplestoreQueryProcessor):
-                df_graph = processor.getCanvasesInCollection()
+                df_graph = processor.getAllCanvases()
 
         for processor in self.queryProcessor:
             if isinstance(processor, RelationalQueryProcessor):
@@ -80,64 +48,120 @@ class GenericQueryProcessor:
 
         return result
 
-    def getCanvasesInManifest(self):
+    def getCanvasesInCollection(self, collectionId: str):
         result = list()
-        df = DataFrame()
+        df_graph = DataFrame()
+        df_rel = DataFrame()
         joined_df = DataFrame()
 
         for processor in self.queryProcessor:
+            if isinstance(processor, TriplestoreQueryProcessor):
+                df_graph = processor.getCanvasesInCollection(collectionId)
+
+        for processor in self.queryProcessor:
             if isinstance(processor, RelationalQueryProcessor):
-                df = processor.getAllEntities()
-            elif isinstance(processor, TriplestoreQueryProcessor):
-                df = processor.getEntitiesWithLabel()
+                for idx, row in df_graph.iterrows():
+                    df_rel.append(processor.getEntitybyId(row[id]))
+                    # joined_df.append(df_rel)
 
-            joined_df = (
-                merge(joined_df, df, left_on="id", right_on="id")
-                .fillna("")
-                .drop_duplicates()
-            )
+        joined_df = (
+            merge(df_rel, df_graph, left_on="id", right_on="id")
+            .fillna("")
+            .drop_duplicates()
+        )
 
-            for idx, row in joined_df.iterrows():
-                entity = Canvas(
-                    row["id"], row["label"], row["title"], row["creator"]
-                ).fillna("")
-                result.append(entity)
+        for idx, row in joined_df.iterrows():
+            entity = Canvas(
+                row["id"], row["label"], row["title"], row["creator"]
+            ).fillna("")
+            result.append(entity)
+
+        return result
+
+    def getCanvasesInManifest(self, manifestId: str):
+        result = list()
+        df_graph = DataFrame()
+        df_rel = DataFrame()
+        joined_df = DataFrame()
+
+        for processor in self.queryProcessor:
+            if isinstance(processor, TriplestoreQueryProcessor):
+                df_graph = processor.getCanvasesInCollections(manifestId)
+
+        for processor in self.queryProcessor:
+            if isinstance(processor, RelationalQueryProcessor):
+                for idx, row in df_graph.iterrows():
+                    df_rel.append(processor.getEntitybyId(row[id]))
+                    # joined_df.append(df_rel)
+
+        joined_df = (
+            merge(df_rel, df_graph, left_on="id", right_on="id")
+            .fillna("")
+            .drop_duplicates()
+        )
+
+        for idx, row in joined_df.iterrows():
+            entity = Canvas(
+                row["id"], row["label"], row["title"], row["creator"]
+            ).fillna("")
+            result.append(entity)
 
         return result
 
     def getEntitiesWithLabel(self, label: str):
         result = list()
-        df = DataFrame()
+        df_graph = DataFrame()
+        df_rel = DataFrame()
         joined_df = DataFrame()
 
         for processor in self.queryProcessor:
-            if isinstance(processor, RelationalQueryProcessor):
-                df = processor.getAllEntities()
-            elif isinstance(processor, TriplestoreQueryProcessor):
-                df = processor.getEntitiesWithLabel(label)
-            # rethink the else case
+            if isinstance(processor, TriplestoreQueryProcessor):
+                df_graph = processor.getEntitiesWithLabel(label)
 
-            joined_df = (
-                merge(joined_df, df, left_on="id", right_on="id")
-                .fillna("")
-                .drop_duplicates()
-            )
+        for processor in self.queryProcessor:
+            if isinstance(processor, RelationalQueryProcessor):
+                for idx, row in df_graph.iterrows():
+                    df_rel.append(processor.getEntitybyId(row[id]))
+                    # joined_df.append(df_rel)
+
+        joined_df = (
+            merge(df_rel, df_graph, left_on="id", right_on="id")
+            .fillna("")
+            .drop_duplicates()
+        )
 
         for idx, row in joined_df.iterrows():
-            id = row["id"]
-            label = label
-            if row["title"]:
-                title = row["title"]
-                creators = row["creators"]
-            else:
-                title = ""
-                creators = ""
-
-            entity = EntityWithMetadata(row["id"], label, title, creators)
+            entity = EntityWithMetadata(
+                row["id"], label, row["title"], row["creator"]
+            ).fillna("")
             result.append(entity)
 
         return result
 
+    def getEntitiesWithTitle(self, title):
+        result = list()
+        df_graph = DataFrame()
+        df_rel = DataFrame()
+        joined_df = DataFrame()
 
-def getEntitiesWithTable():
-    pass
+        for processor in self.queryProcessor:
+            if isinstance(processor, RelationalQueryProcessor):
+                df_graph = processor.getEntitiesWithTitle(title)
+
+        for processor in self.queryProcessor:
+            if isinstance(processor, TriplestoreQueryProcessor):
+                for idx, row in df_graph.iterrows():
+                    df_rel.append(processor.getEntitybyId(row[id]))
+                    # joined_df.append(df_rel)
+
+        joined_df = (
+            merge(df_rel, df_graph, left_on="id", right_on="id")
+            .fillna("")
+            .drop_duplicates()
+        )
+
+        for idx, row in joined_df.iterrows():
+            entity = EntityWithMetadata(
+                row["id"], row["label"], title, row["creator"]
+            ).fillna("")
+            result.append(entity)

@@ -5,6 +5,20 @@ from json import load
 from rdflib import Graph, Literal, RDF, RDFS, URIRef
 from rdflib.plugins.stores.sparqlstore import SPARQLUpdateStore
 
+# classes of resources - pomodoro
+Collection = URIRef("https://github.com/datasci2023/datascience/class/Collection")
+Manifest = URIRef("https://github.com/datasci2023/datascience/class/Manifest")
+Canvas = URIRef("https://github.com/datasci2023/datascience/class/Canvas")
+
+# attributes related to classes - basilico
+id = URIRef("https://github.com/datasci2023/datascience/attribute/id")
+type = URIRef("https://github.com/datasci2023/datascience/attribute/type")
+label = URIRef("https://github.com/datasci2023/datascience/attribute/label")
+
+
+# relations - spaghetti
+items = URIRef("https://github.com/datasci2023/datascience/relation/items")
+
 
 class CollectionProcessor(Processor):
     def __init__(self):
@@ -47,17 +61,6 @@ class CollectionProcessor(Processor):
             return False
 
     def createTriples(self, graph, json_doc):
-        # classes of resources
-        Collection = URIRef("https://github.com/datasci2023/datascience/res/Collection")
-        Manifest = URIRef("https://github.com/datasci2023/datascience/res/Manifest")
-        Canvas = URIRef("https://github.com/datasci2023/datascience/res/Canvas")
-
-        # attributes related to classes - properties
-        id = URIRef("https://github.com/datasci2023/datascience/attr/id")
-        type = URIRef("https://github.com/datasci2023/datascience/attr/type")
-        label = URIRef("https://github.com/datasci2023/datascience/attr/label")
-        items = URIRef("https://github.com/datasci2023/datascience/attr/items")
-
         # create and add triples starting from the collection
         # for URIs, check how peroni defined base and generic URIs in hon#05
         graph.add((URIRef(json_doc["id"]), RDF.type, Collection))

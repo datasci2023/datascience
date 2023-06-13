@@ -14,6 +14,8 @@ class QueryProcessor(Processor):
         # reading data from sqlite or blazegraph
         # for json do we need to wrap the .. for RDF triplestore??
 
+        path = self.getDbPathOrUrl()
+
         if self.dbPathOrUrl:  # dummy condition
             with connect(self.dbPathOrUrl) as con:
                 query = """
@@ -26,26 +28,27 @@ class QueryProcessor(Processor):
                 cursor = con.cursor()
                 cursor.execute(query, (entityId, entityId, entityId))
                 df = read_sql_query(query, con, params=(entityId, entityId, entityId))
-                # df = read_sql(query, con)
+                df = read_sql(query, con)
                 return df
         else:
             endpoint = self.getDbPathOrUrl()
             query = (
-                """
+                (
+                    """
             PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
             PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
             PREFIX p1: <https://github.com/datasci2023/datascience/res/>
             PREFIX p2: <https://github.com/datasci2023/datascience/attr/>
             SELECT ?id ?items ?type ?label 
             WHERE {
-                ?id a '"""
-                + str(entityId)
-                + """' .
+                ?id a <%s> .
                 ?id rdf:type ?type ;
                     rdfs:label ?label .
-                OPTIONAL { ?id p2:items ?items}
+                FILTER ()
             }
             """
+                )
+                % entityId
             )
 
             df_sparql = get(endpoint, query, True)
