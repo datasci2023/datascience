@@ -10,6 +10,8 @@ col_dp.uploadData("collection-2.json")
 grp_qp = TriplestoreQueryProcessor()
 grp_qp.setDbPathOrUrl(grp_endpoint)
 
+print(grp_qp.getDbPathOrUrl())
+
 # print(grp_qp.getManifestsInCollection("https://dl.ficlit.unibo.it/iiif/28429/collection"))
 # print(grp_qp.getAllCollections())
-print(grp_qp.getEntitiesWithLabel("Il Canzoniere"))
+# print(grp_qp.getEntitiesWithLabel("Il Canzoniere"))
