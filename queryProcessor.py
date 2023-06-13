@@ -1,7 +1,6 @@
 from processor import Processor
 from sqlite3 import connect
 from pandas import read_sql, read_sql_query
-
 from sparql_dataframe import get
 
 
@@ -14,7 +13,7 @@ class QueryProcessor(Processor):
         # reading data from sqlite or blazegraph
         # for json do we need to wrap the .. for RDF triplestore??
 
-        if self.dbPathOrUrl:  # dummy condition
+        if isinstance(self):
             with connect(self.dbPathOrUrl) as con:
                 query = """
                 SELECT * FROM EntitiesWithMetadata
@@ -39,7 +38,7 @@ class QueryProcessor(Processor):
             SELECT ?id ?items ?type ?label 
             WHERE {
                 ?id a '"""
-                + str(entityId)
+                + entityId
                 + """' .
                 ?id rdf:type ?type ;
                     rdfs:label ?label .
