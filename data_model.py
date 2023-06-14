@@ -53,37 +53,56 @@ class EntityWithMetadata(IdentifiableEntity):
 
 
 class Canvas(EntityWithMetadata):
-    def __init__(self, id):
-        super().__init__(id)
+    def __init__(self, id, label: str, title: str, creators: str):
+        self.label = label
+        self.title = title
+        self.creators = set()
+        for creator in creators:
+            self.creators.add(creator)
+        # self.items = set()
+        # for item in items:
+        #     self.items.add(item)
+
+        super().__init__(id, label, title, creators)
 
 
 class Manifest(EntityWithMetadata):
-    def __init__(self, id, items):
-        self.items = set()
-        for item in items:
-            self.items.add(item)
+    def __init__(self, id, label: str, title: str, creators: str):
+        self.label = label
+        self.title = title
+        self.creators = set()
+        for creator in creators:
+            self.creators.add(creator)
+        # self.items = set()
+        # for item in items:
+        #     self.items.add(item)
 
-        super().__init__(id)
+        super().__init__(id, label, title, creators)
 
-    def getItems(self) -> list[Canvas]:
-        result = list()
-        for item in self.items:
-            result.append(item)
-        result.sort()
-        return result
+    # def getItems(self) -> list[Canvas]:
+    #     result = list()
+    #     for item in self.items:
+    #         result.append(item)
+    #     result.sort()
+    #     return result
 
 
 class Collection(EntityWithMetadata):
-    def __init__(self, id, items):
-        self.items = set()
-        for item in items:
-            self.items.add(item)
+    def __init__(self, id, label: str, title: str, creators: str):
+        self.label = label
+        self.title = title
+        self.creators = set()
+        for creator in creators:
+            self.creators.add(creator)
+        # self.items = set()
+        # for item in items:
+        #     self.items.add(item)
 
-        super().__init__(id)
+        super().__init__(id, label, title, creators)
 
-    def getItems(self) -> list[Manifest]:
-        result = list()
-        for item in self.items:
-            result.append(item)
-        result.sort()
-        return result
+    # def getItems(self) -> list[Manifest]:
+    #     result = list()
+    #     for item in self.items:
+    #         result.append(item)
+    #     result.sort()
+    #     return result

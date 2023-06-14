@@ -20,9 +20,9 @@ class QueryProcessor(Processor):
             with connect(self.dbPathOrUrl) as con:
                 query = f"""
                 SELECT * FROM EntitiesWithMetadata
-                JOIN Annotations ON EntitiesWithMetadata.metadata_internal_id = Annotations.annotation_targets
-                JOIN Images ON Annotations.annotation_bodies = Images.images_internal_id
-                JOIN Creators ON EntitiesWithMetadata.creator = Creators.creator_internal_id
+                LEFT JOIN Annotations ON EntitiesWithMetadata.metadata_internal_id == Annotations.annotation_targets
+                LEFT JOIN Images ON Annotations.annotation_bodies == Images.images_internal_id
+                LEFT JOIN Creators ON EntitiesWithMetadata.creator == Creators.creator_internal_id
                 WHERE EntitiesWithMetadata.id = '{entityId}' OR Annotations.annotation_ids = '{entityId}' OR Images.image_ids = '{entityId}'
                 """
                 df = read_sql(query, con)

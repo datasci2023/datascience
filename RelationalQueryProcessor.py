@@ -5,28 +5,29 @@ import pandas as pd
 from sqlite3 import connect
 from pandas import read_sql
 
+
 class RelationalQueryProcessor(QueryProcessor):
     def __init__(self):
         super().__init__()
-    
-    def getAllAnnotations (self):
+
+    def getAllAnnotations(self):
         with connect(self.dbPathOrUrl) as con:
             query = "SELECT * FROM Annotations"
             df_sql = read_sql(query, con)
             return df_sql
-    
-    def getAllImages (self):
+
+    def getAllImages(self):
         with connect(self.dbPathOrUrl) as con:
             query = "SELECT * FROM Images"
             df_sql = read_sql(query, con)
             return df_sql
-    
+
     def getAllEntites(self):
         with connect(self.dbPathOrUrl) as con:
             query = "SELECT * FROM EntitiesWithMetadata"
             df_sql = read_sql(query, con)
             return df_sql
-    
+
     def getAnnotationsWithBody(self, bodyId: str):
         with connect(self.dbPathOrUrl) as con:
             query = f"""
@@ -36,7 +37,7 @@ class RelationalQueryProcessor(QueryProcessor):
             """
             df_sql = read_sql(query, con)
             return df_sql
-    
+
     def getAnnotationsWithBodyAndTarget(self, bodyId: str, targetId: str):
         with connect(self.dbPathOrUrl) as con:
             query = f"""
@@ -56,24 +57,24 @@ class RelationalQueryProcessor(QueryProcessor):
             WHERE id = '{targetId}'
             """
             df_sql = read_sql(query, con)
-            return df_sql   
-    
+            return df_sql
+
     def getEntitiesWithTitle(self, title: str):
         with connect(self.dbPathOrUrl) as con:
-            query = f"SELECT * FROM EntitiesWithMetadata WHERE title = '{title}'"
+            query = f"SELECT * FROM EntitiesWithMetadata LEFT JOIN  Creators ON EntitiesWithMetadata.creator == Creators.creator_internal_id WHERE title = '{title}'"
             df_sql = read_sql(query, con)
-            return df_sql  
-    
+            return df_sql
+
     def getEntitiesWithCreator(self, creatorName: str):
         with connect(self.dbPathOrUrl) as con:
             query = f"""
             SELECT * FROM EntitiesWithMetadata
             JOIN Creators ON EntitiesWithMetadata.creator == Creators.creator_internal_id 
-            WHERE Creators.creator = '{creatorName}'
+            WHERE Creators.creator_name = '{creatorName}'
             """
             df_sql = read_sql(query, con)
             return df_sql
-    
+
     def getImagesWithTarget(self, targetId: str):
         with connect(self.dbPathOrUrl) as con:
             query = f"""
@@ -84,9 +85,3 @@ class RelationalQueryProcessor(QueryProcessor):
             """
             df_sql = read_sql(query, con)
             return df_sql
-    
-    
-        
-
-
-

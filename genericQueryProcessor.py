@@ -18,7 +18,7 @@ class GenericQueryProcessor:
         self.queryProcessors.append(processor)
         return True
 
-    def getAllAnnotations(self):
+    def getAllAnnotations(self) -> list[Annotation]:  # workssss
         result = list()
         df_rel = DataFrame()
 
@@ -37,7 +37,7 @@ class GenericQueryProcessor:
 
         return result
 
-    def getAllCanvas(self):
+    def getAllCanvas(self) -> list[Canvas]:  # braveeeee!!!
         result = list()
         df_graph = DataFrame()
         df_rel = DataFrame()
@@ -50,24 +50,22 @@ class GenericQueryProcessor:
         for processor in self.queryProcessors:
             if isinstance(processor, RelationalQueryProcessor):
                 for idx, row in df_graph.iterrows():
-                    df_rel.append(processor.getEntityById(row[id]))
-                    # joined_df.append(df_rel)
+                    df_rel = concat(
+                        [df_rel, processor.getEntityById(row["id"])], ignore_index=True
+                    )
+                    # print(processor.getEntityById(row["id"]))
 
-        joined_df = (
-            merge(df_rel, df_graph, left_on="id", right_on="id")
-            .fillna("")
-            .drop_duplicates()
-        )
+        joined_df = df_graph.merge(df_rel, left_on="id", right_on="id").fillna("")
 
         for idx, row in joined_df.iterrows():
             entity = Canvas(
                 row["id"], row["label"], row["title"], row["creator"]
-            ).fillna("")
+            )  # row["creator"], row["items"]) TO ADD TO SINGLE CELL
             result.append(entity)
 
         return result
 
-    def getAllCollections(self):
+    def getAllCollections(self) -> list[Collection]:  # it worksssss!!!! heyyyy!!!
         result = list()
         df_graph = DataFrame()
         df_rel = DataFrame()
@@ -80,19 +78,22 @@ class GenericQueryProcessor:
         for processor in self.queryProcessors:
             if isinstance(processor, RelationalQueryProcessor):
                 for idx, row in df_graph.iterrows():
-                    df_rel.append(processor.getEntityById(row[id]))
+                    df_rel = concat(
+                        [df_rel, processor.getEntityById(row["id"])], ignore_index=True
+                    )
+                    # print(processor.getEntityById(row["id"]))
 
-        joined_df = merge(df_rel, df_graph, left_on="id", right_on="id").fillna("")
+        joined_df = df_graph.merge(df_rel, left_on="id", right_on="id").fillna("")
 
         for idx, row in joined_df.iterrows():
             entity = Collection(
-                row["id"], row["label"], row["title"]
-            )  # row["items"], row["creator"] TO ADD TO SINGLE CELL
+                row["id"], row["label"], row["title"], row["creator"]
+            )  # row["creator"], row["items"]) TO ADD TO SINGLE CELL
             result.append(entity)
 
         return result
 
-    def getAllImages(self):
+    def getAllImages(self) -> list[Image]:  # worksss
         result = []
         df_rel = DataFrame()
 
@@ -101,12 +102,12 @@ class GenericQueryProcessor:
                 df_rel = processor.getAllImages()
 
         for idx, row in df_rel.iterrows():
-            entity = Image(row["image_ids"]).fillna("")
+            entity = Image(row["image_ids"])
             result.append(entity)
 
         return result
 
-    def getAllManifests(self):
+    def getAllManifests(self) -> list[Manifest]:
         result = list()
         df_graph = DataFrame()
         df_rel = DataFrame()
@@ -119,25 +120,24 @@ class GenericQueryProcessor:
         for processor in self.queryProcessors:
             if isinstance(processor, RelationalQueryProcessor):
                 for idx, row in df_graph.iterrows():
-                    print(processor.getEntityById(row["id"]))
-                    # df_rel = merge(
-                    #     df_rel,
-                    #     processor.getEntityById(row["id"]),
-                    #     left_on="id",
-                    #     right_on="id",
-                    # ).fillna("")
+                    df_rel = concat(
+                        [df_rel, processor.getEntityById(row["id"])], ignore_index=True
+                    )
+                    # print(processor.getEntityById(row["id"]))
 
-        joined_df = merge(df_rel, df_graph, left_on="id", right_on="id").fillna("")
+        joined_df = df_graph.merge(df_rel, left_on="id", right_on="id").fillna("")
 
         for idx, row in joined_df.iterrows():
             entity = Manifest(
-                row["id"], row["label"], row["title"]
+                row["id"], row["label"], row["title"], row["creator"]
             )  # row["creator"], row["items"]) TO ADD TO SINGLE CELL
             result.append(entity)
 
         return result
 
-    def getAnnotationsToCanvas(self, canvasId: str):
+    def getAnnotationsToCanvas(
+        self, canvasId: str
+    ) -> list[Annotation]:  # is working yeeeee
         result = list()
         df_rel = DataFrame()
 
@@ -156,7 +156,9 @@ class GenericQueryProcessor:
 
         return result
 
-    def getAnnotationsToCollection(self, collectionId: str):
+    def getAnnotationsToCollection(
+        self, collectionId: str
+    ) -> list[Annotation]:  # it works yeeee
         result = list()
         df_rel = DataFrame()
 
@@ -175,7 +177,9 @@ class GenericQueryProcessor:
 
         return result
 
-    def getAnnotationsToManifest(self, manifestId: str):
+    def getAnnotationsToManifest(
+        self, manifestId: str
+    ) -> list[Annotation]:  # it worksss oleeee
         result = list()
         df_rel = DataFrame()
 
@@ -194,7 +198,9 @@ class GenericQueryProcessor:
 
         return result
 
-    def getAnnotationsWithBody(self, bodyId):
+    def getAnnotationsWithBody(
+        self, bodyId
+    ) -> list[Annotation]:  # it worksss bravissime
         result = []
         df_rel = DataFrame()
 
@@ -208,12 +214,14 @@ class GenericQueryProcessor:
                 row["annotation_motivations"],
                 IdentifiableEntity(row["annotation_targets"]),
                 Image(row["annotation_bodies"]),
-            ).fillna("")
+            )
             result.append(entity)
 
         return result
 
-    def getAnnotationsWithBodyAndTarget(self, bodyId: str, targetId: str):
+    def getAnnotationsWithBodyAndTarget(
+        self, bodyId: str, targetId: str
+    ) -> list[Annotation]:  # worksssss
         result = []
         df_rel = DataFrame()
 
@@ -227,12 +235,12 @@ class GenericQueryProcessor:
                 row["annotation_motivations"],
                 IdentifiableEntity(row["annotation_targets"]),
                 Image(row["annotation_bodies"]),
-            ).fillna("")
+            )
             result.append(entity)
 
         return result
 
-    def getAnnotationsWithTarget(self, targetId: str):
+    def getAnnotationsWithTarget(self, targetId: str) -> list[Annotation]:  # workssss
         result = []
         df_rel = DataFrame()
 
@@ -246,12 +254,12 @@ class GenericQueryProcessor:
                 row["annotation_motivations"],
                 IdentifiableEntity(row["annotation_targets"]),
                 Image(row["annotation_bodies"]),
-            ).fillna("")
+            )
             result.append(entity)
 
         return result
 
-    def getCanvasesInCollection(self, collectionId: str):
+    def getCanvasesInCollection(self, collectionId: str) -> list[Canvas]:  # workssss
         result = list()
         df_graph = DataFrame()
         df_rel = DataFrame()
@@ -264,24 +272,22 @@ class GenericQueryProcessor:
         for processor in self.queryProcessors:
             if isinstance(processor, RelationalQueryProcessor):
                 for idx, row in df_graph.iterrows():
-                    df_rel.append(processor.getEntityById(row[id]))
-                    # joined_df.append(df_rel)
+                    df_rel = concat(
+                        [df_rel, processor.getEntityById(row["id"])], ignore_index=True
+                    )
+                    # print(processor.getEntityById(row["id"]))
 
-        joined_df = (
-            merge(df_rel, df_graph, left_on="id", right_on="id")
-            .fillna("")
-            .drop_duplicates()
-        )
+        joined_df = df_graph.merge(df_rel, left_on="id", right_on="id").fillna("")
 
         for idx, row in joined_df.iterrows():
             entity = Canvas(
                 row["id"], row["label"], row["title"], row["creator"]
-            ).fillna("")
+            )  # row["creator"], row["items"]) TO ADD TO SINGLE CELL
             result.append(entity)
 
         return result
 
-    def getCanvasesInManifest(self, manifestId: str):
+    def getCanvasesInManifest(self, manifestId: str) -> list[Canvas]:  # worksss
         result = list()
         df_graph = DataFrame()
         df_rel = DataFrame()
@@ -289,50 +295,47 @@ class GenericQueryProcessor:
 
         for processor in self.queryProcessors:
             if isinstance(processor, TriplestoreQueryProcessor):
-                df_graph = processor.getCanvasesInCollections(manifestId)
+                df_graph = processor.getCanvasesInManifest(manifestId)
 
         for processor in self.queryProcessors:
             if isinstance(processor, RelationalQueryProcessor):
                 for idx, row in df_graph.iterrows():
-                    df_rel.append(processor.getEntityById(row[id]))
-                    # joined_df.append(df_rel)
+                    df_rel = concat(
+                        [df_rel, processor.getEntityById(row["id"])], ignore_index=True
+                    )
+                    # print(processor.getEntityById(row["id"]))
 
-        joined_df = (
-            merge(df_rel, df_graph, left_on="id", right_on="id")
-            .fillna("")
-            .drop_duplicates()
-        )
+        joined_df = df_graph.merge(df_rel, left_on="id", right_on="id").fillna("")
 
         for idx, row in joined_df.iterrows():
             entity = Canvas(
                 row["id"], row["label"], row["title"], row["creator"]
-            ).fillna("")
+            )  # row["creator"], row["items"]) TO ADD TO SINGLE CELL
             result.append(entity)
 
         return result
 
-    def getEntityById(self, entityId: str):
-        result = list()
-        df_graph = DataFrame()
-        df_rel = DataFrame()
+    def getEntityById(
+        self, entityId: str
+    ) -> IdentifiableEntity or None:  # workkss oleee
+        df = DataFrame()
 
         for processor in self.queryProcessors:
-            if isinstance(processor, TriplestoreQueryProcessor):
-                df_graph = processor.getEntityById(entityId)
-                for idx, row in df_graph.iterrows():
-                    entity = IdentifiableEntity(row["id"])
-                    result.append(entity)
-                return result
-            elif isinstance(processor, RelationalQueryProcessor):
-                df_rel = processor.getEntityById(entityId)
-                for idx, row in df_rel.iterrows():
-                    entity = IdentifiableEntity(row["id"])
-                    result.append(entity)
-                return result
-            else:
-                return None
+            if isinstance(processor, TriplestoreQueryProcessor) or isinstance(
+                processor, RelationalQueryProcessor
+            ):
+                df = concat([df, processor.getEntityById(entityId)], ignore_index=True)
+                df.drop_duplicates()
+                for idx, row in df.iterrows():
+                    if row["id"]:
+                        entity = IdentifiableEntity(row["id"])
+                        return entity
+                    else:
+                        return None
 
-    def getEntitiesWithCreator(self, creatorName: str):
+    def getEntitiesWithCreator(
+        self, creatorName: str
+    ) -> list[EntityWithMetadata]:  # bugs to fix - creators lists
         result = list()
         df_rel = DataFrame()
         df_graph = DataFrame()
@@ -344,20 +347,23 @@ class GenericQueryProcessor:
 
         for processor in self.queryProcessors:
             if isinstance(processor, TriplestoreQueryProcessor):
-                for idx, row in df_graph.iterrows():
-                    df_graph.append(processor.getEntityById(row[id]))
+                for idx, row in df_rel.iterrows():
+                    df_graph = concat(
+                        [df_graph, processor.getEntityById(row["id"])],
+                        ignore_index=True,
+                    )
 
-        joined_df = merge(df_rel, df_graph, left_on="id", right_on="id").fillna("")
+        joined_df = df_rel.merge(df_graph, left_on="id", right_on="id").fillna("")
 
         for idx, row in joined_df.iterrows():
             entity = EntityWithMetadata(
-                row["id"], row["label"], row["title"], row["creator"]
-            )
+                row["id"], row["label"], row["title"], row["creator_name"]
+            )  # row["creator"], row["items"]) TO ADD TO SINGLE CELL
+            result.append(entity)
 
-        result.append(entity)
         return result
 
-    def getEntitiesWithLabel(self, label: str):
+    def getEntitiesWithLabel(self, label: str) -> list[EntityWithMetadata]:  # workssss
         result = list()
         df_graph = DataFrame()
         df_rel = DataFrame()
@@ -370,24 +376,24 @@ class GenericQueryProcessor:
         for processor in self.queryProcessors:
             if isinstance(processor, RelationalQueryProcessor):
                 for idx, row in df_graph.iterrows():
-                    df_rel.append(processor.getEntityById(row[id]))
-                    # joined_df.append(df_rel)
+                    df_rel = concat(
+                        [df_rel, processor.getEntityById(row["id"])], ignore_index=True
+                    )
+                    # print(processor.getEntityById(row["id"]))
 
-        joined_df = (
-            merge(df_rel, df_graph, left_on="id", right_on="id")
-            .fillna("")
-            .drop_duplicates()
-        )
+        joined_df = df_graph.merge(df_rel, left_on="id", right_on="id").fillna("")
 
         for idx, row in joined_df.iterrows():
             entity = EntityWithMetadata(
-                row["id"], label, row["title"], row["creator"]
-            ).fillna("")
+                row["id"], row["label"], row["title"], row["creator_name"]
+            )  # row["creator"], row["items"]) TO ADD TO SINGLE CELL
             result.append(entity)
 
         return result
 
-    def getEntitiesWithTitle(self, title):
+    def getEntitiesWithTitle(
+        self, title: str
+    ) -> list[EntityWithMetadata]:  # ıt worksss - forza chiara!!! spacchi tutto
         result = list()
         df_graph = DataFrame()
         df_rel = DataFrame()
@@ -395,27 +401,28 @@ class GenericQueryProcessor:
 
         for processor in self.queryProcessors:
             if isinstance(processor, RelationalQueryProcessor):
-                df_graph = processor.getEntitiesWithTitle(title)
+                df_rel = processor.getEntitiesWithTitle(title)
 
         for processor in self.queryProcessors:
             if isinstance(processor, TriplestoreQueryProcessor):
-                for idx, row in df_graph.iterrows():
-                    df_rel.append(processor.getEntityById(row[id]))
-                    # joined_df.append(df_rel)
+                for idx, row in df_rel.iterrows():
+                    df_graph = concat(
+                        [df_graph, processor.getEntityById(row["id"])],
+                        ignore_index=True,
+                    )
+                    # print(processor.getEntityById(row["id"]))
 
-        joined_df = (
-            merge(df_rel, df_graph, left_on="id", right_on="id")
-            .fillna("")
-            .drop_duplicates()
-        )
+        joined_df = df_rel.merge(df_graph, left_on="id", right_on="id").fillna("")
 
         for idx, row in joined_df.iterrows():
             entity = EntityWithMetadata(
-                row["id"], row["label"], title, row["creator"]
-            ).fillna("")
+                row["id"], row["label"], row["title"], row["creator_name"]
+            )  # row["creator"], row["items"]) TO ADD TO SINGLE CELL
             result.append(entity)
 
-    def getImagesAnnotationgCanvas(self, canvasId):
+        return result
+
+    def getImagesAnnotationgCanvas(self, canvasId) -> list[Image]:  # worksss
         result = []
         df_rel = DataFrame()
 
@@ -424,12 +431,14 @@ class GenericQueryProcessor:
                 df_rel = processor.getImagesWithTarget(canvasId)
 
         for idx, row in df_rel.iterrows():
-            entity = Image(row["image_ids"]).fillna("")
+            entity = Image(row["image_ids"])
             result.append(entity)
 
         return result
 
-    def getManifestsInCollection(self, collectionId: str):
+    def getManifestsInCollection(
+        self, collectionId: str
+    ) -> list[Manifest]:  # workinggg
         result = list()
         df_graph = DataFrame()
         df_rel = DataFrame()
@@ -442,14 +451,17 @@ class GenericQueryProcessor:
         for processor in self.queryProcessors:
             if isinstance(processor, RelationalQueryProcessor):
                 for idx, row in df_graph.iterrows():
-                    df_rel.append(processor.getEntityById(row[id]))
+                    df_rel = concat(
+                        [df_rel, processor.getEntityById(row["id"])], ignore_index=True
+                    )
+                    # print(processor.getEntityById(row["id"]))
 
-        joined_df = merge(df_rel, df_graph, left_on="id", right_on="id").fillna("")
+        joined_df = df_graph.merge(df_rel, left_on="id", right_on="id").fillna("")
 
         for idx, row in joined_df.iterrows():
             entity = Manifest(
                 row["id"], row["label"], row["title"], row["creator"]
-            )  # row["items"] CREATE ONLY ONE CELL
+            )  # row["creator"], row["items"]) TO ADD TO SINGLE CELL
+            result.append(entity)
 
-        result.append(entity)
         return result
