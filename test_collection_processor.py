@@ -5,13 +5,14 @@ from TriplestoreQueryProcessor import TriplestoreQueryProcessor
 from genericQueryProcessor import GenericQueryProcessor
 
 rel_path = "relational.db"
-ann_dp = AnnotationProcessor()
-ann_dp.setDbPathOrUrl(rel_path)
-ann_dp.uploadData("annotations.csv")
-
 met_dp = MetadataProcessor()
 met_dp.setDbPathOrUrl(rel_path)
 met_dp.uploadData("metadata.csv")
+
+ann_dp = AnnotationProcessor()
+ann_dp.setDbPathOrUrl(rel_path)
+ann_dp.load_dataframe_from_db(rel_path)
+ann_dp.uploadData("annotations.csv")
 
 grp_endpoint = "http://127.0.0.1:9999/blazegraph/sparql"
 col_dp = CollectionProcessor()
@@ -32,7 +33,7 @@ generic.addQueryProcessor(rel_qp)
 generic.addQueryProcessor(grp_qp)
 
 result_q1 = generic.getAllManifests()
-result_q2 = generic.getEntitiesWithCreator("Dante, Alighieri")
-result_q3 = generic.getAnnotationsToCanvas(
-    "https://dl.ficlit.unibo.it/iiif/2/28429/canvas/p1"
-)
+# result_q2 = generic.getEntitiesWithCreator("Dante, Alighieri")
+# result_q3 = generic.getAnnotationsToCanvas(
+#     "https://dl.ficlit.unibo.it/iiif/2/28429/canvas/p1"
+# )

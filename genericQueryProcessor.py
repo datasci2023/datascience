@@ -8,14 +8,14 @@ from data_model import *
 
 class GenericQueryProcessor:
     def __init__(self):
-        self.queryProcessor = [QueryProcessor]
+        self.queryProcessors = []
 
     def cleanQueryProcessor(self):
-        self.queryProcessor = []
+        self.queryProcessors = []
         return True
 
     def addQueryProcessor(self, processor: QueryProcessor):
-        self.queryProcessor.append(processor)
+        self.queryProcessors.append(processor)
         return True
 
     def getAllAnnotations(self):
@@ -43,14 +43,14 @@ class GenericQueryProcessor:
         df_rel = DataFrame()
         joined_df = DataFrame()
 
-        for processor in self.queryProcessor:
+        for processor in self.queryProcessors:
             if isinstance(processor, TriplestoreQueryProcessor):
                 df_graph = processor.getAllCanvases()
 
-        for processor in self.queryProcessor:
+        for processor in self.queryProcessors:
             if isinstance(processor, RelationalQueryProcessor):
                 for idx, row in df_graph.iterrows():
-                    df_rel.append(processor.getEntitybyId(row[id]))
+                    df_rel.append(processor.getEntityById(row[id]))
                     # joined_df.append(df_rel)
 
         joined_df = (
@@ -67,17 +67,17 @@ class GenericQueryProcessor:
 
         return result
 
-    def getAllCollections(self) -> list(Collection):
+    def getAllCollections(self):
         result = list()
         df_graph = DataFrame()
         df_rel = DataFrame()
         joined_df = DataFrame()
 
-        for processor in self.queryProcessor:
+        for processor in self.queryProcessors:
             if isinstance(processor, TriplestoreQueryProcessor):
                 df_graph = processor.getAllCollections()
 
-        for processor in self.queryProcessor:
+        for processor in self.queryProcessors:
             if isinstance(processor, RelationalQueryProcessor):
                 for idx, row in df_graph.iterrows():
                     df_rel.append(processor.getEntityById(row[id]))
@@ -88,15 +88,15 @@ class GenericQueryProcessor:
             entity = Collection(
                 row["id"], row["label"], row["title"]
             )  # row["items"], row["creator"] TO ADD TO SINGLE CELL
+            result.append(entity)
 
-        result.append(entity)
         return result
 
     def getAllImages(self):
         result = []
         df_rel = DataFrame()
 
-        for processor in self.queryProcessor:
+        for processor in self.queryProcessors:
             if isinstance(processor, RelationalQueryProcessor):
                 df_rel = processor.getAllImages()
 
@@ -106,20 +106,26 @@ class GenericQueryProcessor:
 
         return result
 
-    def getAllManifests(self) -> list(Manifest):
+    def getAllManifests(self):
         result = list()
         df_graph = DataFrame()
         df_rel = DataFrame()
         joined_df = DataFrame()
 
-        for processor in self.queryProcessor:
+        for processor in self.queryProcessors:
             if isinstance(processor, TriplestoreQueryProcessor):
                 df_graph = processor.getAllManifests()
 
-        for processor in self.queryProcessor:
+        for processor in self.queryProcessors:
             if isinstance(processor, RelationalQueryProcessor):
                 for idx, row in df_graph.iterrows():
-                    df_rel.append(processor.getEntityById(row[id]))
+                    print(processor.getEntityById(row["id"]))
+                    # df_rel = merge(
+                    #     df_rel,
+                    #     processor.getEntityById(row["id"]),
+                    #     left_on="id",
+                    #     right_on="id",
+                    # ).fillna("")
 
         joined_df = merge(df_rel, df_graph, left_on="id", right_on="id").fillna("")
 
@@ -127,8 +133,8 @@ class GenericQueryProcessor:
             entity = Manifest(
                 row["id"], row["label"], row["title"]
             )  # row["creator"], row["items"]) TO ADD TO SINGLE CELL
+            result.append(entity)
 
-        result.append(entity)
         return result
 
     def getAnnotationsToCanvas(self, canvasId: str):
@@ -192,7 +198,7 @@ class GenericQueryProcessor:
         result = []
         df_rel = DataFrame()
 
-        for processor in self.queryProcessor:
+        for processor in self.queryProcessors:
             if isinstance(processor, RelationalQueryProcessor):
                 df_rel = processor.getAnnotationsWithBody(bodyId)
 
@@ -211,7 +217,7 @@ class GenericQueryProcessor:
         result = []
         df_rel = DataFrame()
 
-        for processor in self.queryProcessor:
+        for processor in self.queryProcessors:
             if isinstance(processor, RelationalQueryProcessor):
                 df_rel = processor.getAnnotationsWithBodyAndTarget(bodyId, targetId)
 
@@ -230,7 +236,7 @@ class GenericQueryProcessor:
         result = []
         df_rel = DataFrame()
 
-        for processor in self.queryProcessor:
+        for processor in self.queryProcessors:
             if isinstance(processor, RelationalQueryProcessor):
                 df_rel = processor.getAnnotationsWithTarget(targetId)
 
@@ -251,14 +257,14 @@ class GenericQueryProcessor:
         df_rel = DataFrame()
         joined_df = DataFrame()
 
-        for processor in self.queryProcessor:
+        for processor in self.queryProcessors:
             if isinstance(processor, TriplestoreQueryProcessor):
                 df_graph = processor.getCanvasesInCollection(collectionId)
 
-        for processor in self.queryProcessor:
+        for processor in self.queryProcessors:
             if isinstance(processor, RelationalQueryProcessor):
                 for idx, row in df_graph.iterrows():
-                    df_rel.append(processor.getEntitybyId(row[id]))
+                    df_rel.append(processor.getEntityById(row[id]))
                     # joined_df.append(df_rel)
 
         joined_df = (
@@ -281,14 +287,14 @@ class GenericQueryProcessor:
         df_rel = DataFrame()
         joined_df = DataFrame()
 
-        for processor in self.queryProcessor:
+        for processor in self.queryProcessors:
             if isinstance(processor, TriplestoreQueryProcessor):
                 df_graph = processor.getCanvasesInCollections(manifestId)
 
-        for processor in self.queryProcessor:
+        for processor in self.queryProcessors:
             if isinstance(processor, RelationalQueryProcessor):
                 for idx, row in df_graph.iterrows():
-                    df_rel.append(processor.getEntitybyId(row[id]))
+                    df_rel.append(processor.getEntityById(row[id]))
                     # joined_df.append(df_rel)
 
         joined_df = (
@@ -305,12 +311,12 @@ class GenericQueryProcessor:
 
         return result
 
-    def getEntityById(self, entityId: str) -> IdentifiableEntity or None:
+    def getEntityById(self, entityId: str):
         result = list()
         df_graph = DataFrame()
         df_rel = DataFrame()
 
-        for processor in self.queryProcessor:
+        for processor in self.queryProcessors:
             if isinstance(processor, TriplestoreQueryProcessor):
                 df_graph = processor.getEntityById(entityId)
                 for idx, row in df_graph.iterrows():
@@ -326,20 +332,20 @@ class GenericQueryProcessor:
             else:
                 return None
 
-    def EntitiesWithCreator(self, creatorName: str) -> list(EntityWithMetadata):
+    def getEntitiesWithCreator(self, creatorName: str):
         result = list()
         df_rel = DataFrame()
         df_graph = DataFrame()
         joined_df = DataFrame()
 
-        for processor in self.queryProcessor:
+        for processor in self.queryProcessors:
             if isinstance(processor, RelationalQueryProcessor):
                 df_rel = processor.getEntitiesWithCreator(creatorName)
 
-        for processor in self.queryProcessor:
+        for processor in self.queryProcessors:
             if isinstance(processor, TriplestoreQueryProcessor):
                 for idx, row in df_graph.iterrows():
-                    df_graph.append(processor.getEntitybyId(row[id]))
+                    df_graph.append(processor.getEntityById(row[id]))
 
         joined_df = merge(df_rel, df_graph, left_on="id", right_on="id").fillna("")
 
@@ -357,14 +363,14 @@ class GenericQueryProcessor:
         df_rel = DataFrame()
         joined_df = DataFrame()
 
-        for processor in self.queryProcessor:
+        for processor in self.queryProcessors:
             if isinstance(processor, TriplestoreQueryProcessor):
                 df_graph = processor.getEntitiesWithLabel(label)
 
-        for processor in self.queryProcessor:
+        for processor in self.queryProcessors:
             if isinstance(processor, RelationalQueryProcessor):
                 for idx, row in df_graph.iterrows():
-                    df_rel.append(processor.getEntitybyId(row[id]))
+                    df_rel.append(processor.getEntityById(row[id]))
                     # joined_df.append(df_rel)
 
         joined_df = (
@@ -387,14 +393,14 @@ class GenericQueryProcessor:
         df_rel = DataFrame()
         joined_df = DataFrame()
 
-        for processor in self.queryProcessor:
+        for processor in self.queryProcessors:
             if isinstance(processor, RelationalQueryProcessor):
                 df_graph = processor.getEntitiesWithTitle(title)
 
-        for processor in self.queryProcessor:
+        for processor in self.queryProcessors:
             if isinstance(processor, TriplestoreQueryProcessor):
                 for idx, row in df_graph.iterrows():
-                    df_rel.append(processor.getEntitybyId(row[id]))
+                    df_rel.append(processor.getEntityById(row[id]))
                     # joined_df.append(df_rel)
 
         joined_df = (
@@ -413,7 +419,7 @@ class GenericQueryProcessor:
         result = []
         df_rel = DataFrame()
 
-        for processor in self.queryProcessor:
+        for processor in self.queryProcessors:
             if isinstance(processor, RelationalQueryProcessor):
                 df_rel = processor.getImagesWithTarget(canvasId)
 
@@ -423,20 +429,20 @@ class GenericQueryProcessor:
 
         return result
 
-    def getManifestsInCollection(self, collectionId: str) -> list(Manifest):
+    def getManifestsInCollection(self, collectionId: str):
         result = list()
         df_graph = DataFrame()
         df_rel = DataFrame()
         joined_df = DataFrame()
 
-        for processor in self.queryProcessor:
+        for processor in self.queryProcessors:
             if isinstance(processor, TriplestoreQueryProcessor):
                 df_graph = processor.getManifestsInCollection(collectionId)
 
-        for processor in self.queryProcessor:
+        for processor in self.queryProcessors:
             if isinstance(processor, RelationalQueryProcessor):
                 for idx, row in df_graph.iterrows():
-                    df_rel.append(processor.getEntitybyId(row[id]))
+                    df_rel.append(processor.getEntityById(row[id]))
 
         joined_df = merge(df_rel, df_graph, left_on="id", right_on="id").fillna("")
 
