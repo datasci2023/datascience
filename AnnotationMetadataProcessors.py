@@ -99,18 +99,9 @@ class MetadataProcessor(Processor):
 class AnnotationProcessor(Processor):
     def __init__(self):
         super().__init__()
-    
-    def load_dataframe_from_db(self, dbPathOrUrl : str):
-            with connect(dbPathOrUrl) as con:
-                query = "SELECT * FROM EntitiesWithMetadata"
-                metadata_temp = pd.read_sql_query(query, con)
-                return metadata_temp
-                # Load EntityWithMetadata dataframe from the database so that it can be merged with dataframes created with uploadData method   
-                # Check again if this is the best method to do this
 
     def uploadData(self, path2):            
-        try:
-            metadata_temp = self.load_dataframe_from_db(self=AnnotationProcessor)        
+        try:        
             with connect(self.dbPathOrUrl) as con:
             #ANNOTATION TABLE
                 path2 = read_csv(path2,
@@ -147,19 +138,25 @@ class AnnotationProcessor(Processor):
                     annotation_targets.append(value)
 
                 annotation_table.insert(3,"annotation_targets", Series(annotation_targets, dtype= "string"))
-                annotation_merged = merge(annotation_table, metadata_temp, left_on="annotation_targets", right_on="id")
-                # Merge Annotations table with the temporary metadata table, using as key the id of the entity with metadata
-                annotations = annotation_merged[["annotation_ids", "annotation_internal_id", "annotation_bodies", "metadata_internal_id"]]
-                # Keep only the columns we need
-                annotations = annotations.rename(columns={"metadata_internal_id": "annotation_targets"})
-                # Use the column with the entity with metadata internal id, instead of just the id; rename it as "annotation_targets"
+                with connect(self.dbPathOrUrl) as con:
+                    query = "SELECT * FROM EntitiesWithMetadata"
+                    metadata_temp = pd.read_sql_query(query, con)
+                    
+                    # Load EntityWithMetadata dataframe from the database so that it can be merged with dataframes created with uploadData method   
+                    # Check again if this is the best method to do this
+                    annotation_merged = merge(annotation_table, metadata_temp, left_on="annotation_targets", right_on="id")
+                    # Merge Annotations table with the temporary metadata table, using as key the id of the entity with metadata
+                    annotations = annotation_merged[["annotation_ids", "annotation_internal_id", "annotation_bodies", "metadata_internal_id"]]
+                    # Keep only the columns we need
+                    annotations = annotations.rename(columns={"metadata_internal_id": "annotation_targets"})
+                    # Use the column with the entity with metadata internal id, instead of just the id; rename it as "annotation_targets"
 
-                
-                annotation_motivations = []
-                for idx, value in path2['motivation'].items():
-                    annotation_motivations.append(value)
+                    
+                    annotation_motivations = []
+                    for idx, value in path2['motivation'].items():
+                        annotation_motivations.append(value)
 
-                annotations.insert(4,"annotation_motivations", Series(annotation_motivations, dtype= "string"))
+                    annotations.insert(4,"annotation_motivations", Series(annotation_motivations, dtype= "string"))
 
 
                 #IMAGE TABLE
@@ -200,4 +197,4 @@ class AnnotationProcessor(Processor):
             print("Error during the commit of the following changes:")
             print(e)
             return False
-        
+
