@@ -14,7 +14,7 @@ class GenericQueryProcessor:
         self.queryProcessors = []
         return True
 
-    def addQueryProcessor(self, processor: QueryProcessor):
+    def addQueryProcessor(self, processor: QueryProcessor):  # workssss
         self.queryProcessors.append(processor)
         return True
 
@@ -107,7 +107,7 @@ class GenericQueryProcessor:
 
         return result
 
-    def getAllManifests(self) -> list[Manifest]:
+    def getAllManifests(self) -> list[Manifest]:  # worksss
         result = list()
         df_graph = DataFrame()
         df_rel = DataFrame()
