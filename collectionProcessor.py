@@ -15,7 +15,6 @@ id = URIRef("https://github.com/datasci2023/datascience/attribute/id")
 type = URIRef("https://github.com/datasci2023/datascience/attribute/type")
 label = URIRef("https://github.com/datasci2023/datascience/attribute/label")
 
-
 # relations - spaghetti
 items = URIRef("https://github.com/datasci2023/datascience/relation/items")
 
@@ -65,8 +64,12 @@ class CollectionProcessor(Processor):
         # for URIs, check how peroni defined base and generic URIs in hon#05
         graph.add((URIRef(json_doc["id"]), RDF.type, Collection))
         graph.add(
-            (URIRef(json_doc["id"]), RDFS.label, Literal(json_doc["label"]))
-        )  # find a way to add label
+            (
+                URIRef(json_doc["id"]),
+                RDFS.label,
+                Literal("".join(list(json_doc["label"].values())[0])),
+            )
+        )
 
         for manifest in json_doc["items"]:
             graph.add((URIRef(json_doc["id"]), items, URIRef(manifest["id"])))

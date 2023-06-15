@@ -53,10 +53,11 @@ class TriplestoreQueryProcessor(QueryProcessor):
         PREFIX feslegen: <https://github.com/datasci2023/datascience/attribute/>
         PREFIX spaghetti:  <https://github.com/datasci2023/datascience/relation/>
         
-        SELECT ?id ?label
+        SELECT ?id ?label ?items
         WHERE {
             ?id rdf:type pomodoro:Manifest;
-                rdfs:label ?label .
+                rdfs:label ?label ;
+                spaghetti:items ?items .
         }
         """
         df_sparql = get(endpoint, query, True)
@@ -147,11 +148,12 @@ class TriplestoreQueryProcessor(QueryProcessor):
         PREFIX feslegen: <https://github.com/datasci2023/datascience/attribute/>
         PREFIX spaghetti:  <https://github.com/datasci2023/datascience/relation/>
         
-        SELECT ?id ?label ?canvas_id
+        SELECT ?id ?label ?items
         WHERE { 
             ?collection_id rdf:type pomodoro:Collection;
                 spaghetti:items ?id . 
-            ?id rdfs:label ?label .
+            ?id rdfs:label ?label ;
+                spaghetti:items ?items .
             FILTER ( ?collection_id = <%s> ) 
                       
         }

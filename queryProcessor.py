@@ -48,6 +48,8 @@ class QueryProcessor(Processor):
                 )
                 % entityId
             )
+            df_sparql = get(endpoint, query, True)
+            return df_sparql
         else:
             print("Error!!!")
 
