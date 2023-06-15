@@ -34,10 +34,11 @@ class TriplestoreQueryProcessor(QueryProcessor):
         PREFIX feslegen: <https://github.com/datasci2023/datascience/attribute/>
         PREFIX spaghetti:  <https://github.com/datasci2023/datascience/relation/>
         
-        SELECT ?id ?label ?manifest_id
+        SELECT ?id ?label ?items 
         WHERE {
             ?id rdf:type pomodoro:Collection;
-                rdfs:label ?label .
+                rdfs:label ?label ;
+                spaghetti:items ?items .
                 }
         """
         df_sparql = get(endpoint, query, True)

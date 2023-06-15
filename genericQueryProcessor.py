@@ -59,7 +59,7 @@ class GenericQueryProcessor:
 
         for idx, row in joined_df.iterrows():
             entity = Canvas(
-                row["id"], row["label"], row["title"], row["creator"]
+                row["id"], row["label"], row["title"], row["creator_name"]
             )  # row["creator"], row["items"]) TO ADD TO SINGLE CELL
             result.append(entity)
 
@@ -78,16 +78,16 @@ class GenericQueryProcessor:
         for processor in self.queryProcessors:
             if isinstance(processor, RelationalQueryProcessor):
                 for idx, row in df_graph.iterrows():
+                    print(processor.getEntityById(row["id"]))
                     df_rel = concat(
                         [df_rel, processor.getEntityById(row["id"])], ignore_index=True
                     )
-                    # print(processor.getEntityById(row["id"]))
 
         joined_df = df_graph.merge(df_rel, left_on="id", right_on="id").fillna("")
 
         for idx, row in joined_df.iterrows():
             entity = Collection(
-                row["id"], row["label"], row["title"], row["creator"]
+                row["id"], row["label"], row["title"], row["creator_name"]
             )  # row["creator"], row["items"]) TO ADD TO SINGLE CELL
             result.append(entity)
 
@@ -129,7 +129,7 @@ class GenericQueryProcessor:
 
         for idx, row in joined_df.iterrows():
             entity = Manifest(
-                row["id"], row["label"], row["title"], row["creator"]
+                row["id"], row["label"], row["title"], row["creator_name"]
             )  # row["creator"], row["items"]) TO ADD TO SINGLE CELL
             result.append(entity)
 
@@ -281,7 +281,7 @@ class GenericQueryProcessor:
 
         for idx, row in joined_df.iterrows():
             entity = Canvas(
-                row["id"], row["label"], row["title"], row["creator"]
+                row["id"], row["label"], row["title"], row["creator_name"]
             )  # row["creator"], row["items"]) TO ADD TO SINGLE CELL
             result.append(entity)
 
@@ -309,7 +309,7 @@ class GenericQueryProcessor:
 
         for idx, row in joined_df.iterrows():
             entity = Canvas(
-                row["id"], row["label"], row["title"], row["creator"]
+                row["id"], row["label"], row["title"], row["creator_name"]
             )  # row["creator"], row["items"]) TO ADD TO SINGLE CELL
             result.append(entity)
 
@@ -460,7 +460,7 @@ class GenericQueryProcessor:
 
         for idx, row in joined_df.iterrows():
             entity = Manifest(
-                row["id"], row["label"], row["title"], row["creator"]
+                row["id"], row["label"], row["title"], row["creator_name"]
             )  # row["creator"], row["items"]) TO ADD TO SINGLE CELL
             result.append(entity)
 
