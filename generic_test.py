@@ -557,6 +557,7 @@ class GenericQueryProcessor:
                     row["creator_name"],
                     row["items"],
                 )
+                # print(entity.__dict__)
                 result.append(entity)
 
         return result
