@@ -4,22 +4,22 @@ from collectionProcessor import CollectionProcessor
 from TriplestoreQueryProcessor import TriplestoreQueryProcessor
 from genericQueryProcessor import GenericQueryProcessor
 from generic_creator import GenericQueryProcessorDeneme
-from generic_test import GenericQueryProcessor3
+from generic_test import GenericQueryProcessor
 
 rel_path = "relational.db"
 met_dp = MetadataProcessor()
 met_dp.setDbPathOrUrl(rel_path)
-met_dp.uploadData("metadata.csv")
+met_dp.uploadData("data/metadata.csv")
 
 ann_dp = AnnotationProcessor()
 ann_dp.setDbPathOrUrl(rel_path)
-ann_dp.uploadData("annotations.csv")
+ann_dp.uploadData("data/annotations.csv")
 
 grp_endpoint = "http://127.0.0.1:9999/blazegraph/sparql"
 col_dp = CollectionProcessor()
 col_dp.setDbPathOrUrl(grp_endpoint)
-col_dp.uploadData("collection-1.json")
-col_dp.uploadData("collection-2.json")
+col_dp.uploadData("data/collection-1.json")
+col_dp.uploadData("data/collection-2.json")
 
 rel_qp = RelationalQueryProcessor()
 rel_qp.setDbPathOrUrl(rel_path)
@@ -33,7 +33,7 @@ generic = GenericQueryProcessor()
 generic.addQueryProcessor(rel_qp)
 generic.addQueryProcessor(grp_qp)
 
-generic3 = GenericQueryProcessor3()
+generic3 = GenericQueryProcessor()
 generic3.addQueryProcessor(rel_qp)
 generic3.addQueryProcessor(grp_qp)
 
@@ -61,21 +61,20 @@ generic3.addQueryProcessor(grp_qp)
 # result = generic3.getAnnotationsWithTarget(
 #     "https://dl.ficlit.unibo.it/iiif/2/28429/canvas/p1"
 # )
-# result = generic3.getCanvasesInCollection(
-#     "https://dl.ficlit.unibo.it/iiif/28429/collection"
-# )
+result = generic3.getCanvasesInCollection(
+    "https://dl.ficlit.unibo.it/iiif/28429/collectin"
+)
 # result = generic3.getCanvasesInManifest(
 #     "https://dl.ficlit.unibo.it/iiif/2/28429/manifest"
 # )
 # result = generic3.getEntityById("https://dl.ficlit.unibo.it/iiif/2/28429/manifest")
-# result = generic3.getEntitiesWithCreator("Alighieri, Dante")
+# result = generic3.getEntitiesWithCreator("Doe, Jane")
 # result = generic3.getEntitiesWithLabel("Works of Dante Alighieri")
 # result = generic3.getEntitiesWithTitle("Dante Alighieri: Opere")
 # result = generic3.getImagesAnnotatingCanvas(
 #     "https://dl.ficlit.unibo.it/iiif/2/28429/canvas/p1"
 # )
-result = generic3.getManifestsInCollection(
-    "https://dl.ficlit.unibo.it/iiif/28429/collection"
-)
-
+# result = generic3.getManifestsInCollection(
+#     "https://dl.ficlit.unibo.it/iiif/28429/collection"
+# )
 print(result)

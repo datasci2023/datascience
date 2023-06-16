@@ -26,14 +26,15 @@ class GenericQueryProcessor:
             if isinstance(processor, RelationalQueryProcessor):
                 df_rel = processor.getAllAnnotations()
 
-        for idx, row in df_rel.iterrows():
-            entity = Annotation(
-                row["annotation_ids"],
-                row["annotation_motivations"],
-                IdentifiableEntity(row["annotation_targets"]),
-                Image(row["annotation_bodies"]),
-            )
-            result.append(entity)
+        if not df_rel.empty:
+            for idx, row in df_rel.iterrows():
+                entity = Annotation(
+                    row["annotation_ids"],
+                    row["annotation_motivations"],
+                    IdentifiableEntity(row["annotation_targets"]),
+                    Image(row["annotation_bodies"]),
+                )
+                result.append(entity)
 
         return result
 
@@ -47,22 +48,28 @@ class GenericQueryProcessor:
             if isinstance(processor, TriplestoreQueryProcessor):
                 df_graph = processor.getAllCanvases()
 
-        for processor in self.queryProcessors:
-            if isinstance(processor, RelationalQueryProcessor):
-                for idx, row in df_graph.iterrows():
-                    df_rel = concat(
-                        [df_rel, processor.getEntityById(row["id"])], ignore_index=True
-                    )
+        if not df_graph.empty:
+            for processor in self.queryProcessors:
+                if isinstance(processor, RelationalQueryProcessor):
+                    for idx, row in df_graph.iterrows():
+                        df_rel = concat(
+                            [df_rel, processor.getEntityById(row["id"])],
+                            ignore_index=True,
+                        )
 
-        df_rel = (
-            df_rel.groupby(["id", "title"])["creator_name"].apply(list).reset_index()
-        )
+            df_rel = (
+                df_rel.groupby(["id", "title"])["creator_name"]
+                .apply(list)
+                .reset_index()
+            )
 
-        joined_df = df_graph.merge(df_rel, how="left", on="id").fillna("")
+            joined_df = df_graph.merge(df_rel, how="left", on="id").fillna("")
 
-        for idx, row in joined_df.iterrows():
-            entity = Canvas(row["id"], row["label"], row["title"], row["creator_name"])
-            result.append(entity)
+            for idx, row in joined_df.iterrows():
+                entity = Canvas(
+                    row["id"], row["label"], row["title"], row["creator_name"]
+                )
+                result.append(entity)
 
         return result
 
@@ -76,25 +83,35 @@ class GenericQueryProcessor:
             if isinstance(processor, TriplestoreQueryProcessor):
                 df_graph = processor.getAllCollections()
 
-        for processor in self.queryProcessors:
-            if isinstance(processor, RelationalQueryProcessor):
-                for idx, row in df_graph.iterrows():
-                    df_rel = concat(
-                        [df_rel, processor.getEntityById(row["id"])], ignore_index=True
-                    )
+        if not df_graph.empty:
+            for processor in self.queryProcessors:
+                if isinstance(processor, RelationalQueryProcessor):
+                    for idx, row in df_graph.iterrows():
+                        df_rel = concat(
+                            [df_rel, processor.getEntityById(row["id"])],
+                            ignore_index=True,
+                        )
 
-        df_graph = df_graph.groupby(["id", "label"])["items"].apply(list).reset_index()
-        df_rel = (
-            df_rel.groupby(["id", "title"])["creator_name"].apply(list).reset_index()
-        )
-
-        joined_df = df_graph.merge(df_rel, how="left", on="id").fillna("")
-
-        for idx, row in joined_df.iterrows():
-            entity = Collection(
-                row["id"], row["label"], row["title"], row["creator_name"], row["items"]
+            df_graph = (
+                df_graph.groupby(["id", "label"])["items"].apply(list).reset_index()
             )
-            result.append(entity)
+            df_rel = (
+                df_rel.groupby(["id", "title"])["creator_name"]
+                .apply(list)
+                .reset_index()
+            )
+
+            joined_df = df_graph.merge(df_rel, how="left", on="id").fillna("")
+
+            for idx, row in joined_df.iterrows():
+                entity = Collection(
+                    row["id"],
+                    row["label"],
+                    row["title"],
+                    row["creator_name"],
+                    row["items"],
+                )
+                result.append(entity)
 
         return result
 
@@ -106,9 +123,10 @@ class GenericQueryProcessor:
             if isinstance(processor, RelationalQueryProcessor):
                 df_rel = processor.getAllImages()
 
-        for idx, row in df_rel.iterrows():
-            entity = Image(row["image_ids"])
-            result.append(entity)
+        if not df_rel.empty:
+            for idx, row in df_rel.iterrows():
+                entity = Image(row["image_ids"])
+                result.append(entity)
 
         return result
 
@@ -122,25 +140,35 @@ class GenericQueryProcessor:
             if isinstance(processor, TriplestoreQueryProcessor):
                 df_graph = processor.getAllManifests()
 
-        for processor in self.queryProcessors:
-            if isinstance(processor, RelationalQueryProcessor):
-                for idx, row in df_graph.iterrows():
-                    df_rel = concat(
-                        [df_rel, processor.getEntityById(row["id"])], ignore_index=True
-                    )
+        if not df_graph.empty:
+            for processor in self.queryProcessors:
+                if isinstance(processor, RelationalQueryProcessor):
+                    for idx, row in df_graph.iterrows():
+                        df_rel = concat(
+                            [df_rel, processor.getEntityById(row["id"])],
+                            ignore_index=True,
+                        )
 
-        df_graph = df_graph.groupby(["id", "label"])["items"].apply(list).reset_index()
-        df_rel = (
-            df_rel.groupby(["id", "title"])["creator_name"].apply(list).reset_index()
-        )
-
-        joined_df = df_graph.merge(df_rel, how="left", on="id").fillna("")
-
-        for idx, row in joined_df.iterrows():
-            entity = Manifest(
-                row["id"], row["label"], row["title"], row["creator_name"], row["items"]
+            df_graph = (
+                df_graph.groupby(["id", "label"])["items"].apply(list).reset_index()
             )
-            result.append(entity)
+            df_rel = (
+                df_rel.groupby(["id", "title"])["creator_name"]
+                .apply(list)
+                .reset_index()
+            )
+
+            joined_df = df_graph.merge(df_rel, how="left", on="id").fillna("")
+
+            for idx, row in joined_df.iterrows():
+                entity = Manifest(
+                    row["id"],
+                    row["label"],
+                    row["title"],
+                    row["creator_name"],
+                    row["items"],
+                )
+                result.append(entity)
 
         return result
 
@@ -154,14 +182,15 @@ class GenericQueryProcessor:
             if isinstance(processor, RelationalQueryProcessor):
                 df_rel = processor.getAnnotationsWithTarget(canvasId)
 
-        for idx, row in df_rel.iterrows():
-            entity = Annotation(
-                row["annotation_ids"],
-                row["annotation_motivations"],
-                IdentifiableEntity(row["annotation_targets"]),
-                Image(row["annotation_bodies"]),
-            )
-            result.append(entity)
+        if not df_rel.empty:
+            for idx, row in df_rel.iterrows():
+                entity = Annotation(
+                    row["annotation_ids"],
+                    row["annotation_motivations"],
+                    IdentifiableEntity(row["annotation_targets"]),
+                    Image(row["annotation_bodies"]),
+                )
+                result.append(entity)
 
         return result
 
@@ -175,14 +204,15 @@ class GenericQueryProcessor:
             if isinstance(processor, RelationalQueryProcessor):
                 df_rel = processor.getAnnotationsWithTarget(collectionId)
 
-        for idx, row in df_rel.iterrows():
-            entity = Annotation(
-                row["annotation_ids"],
-                row["annotation_motivations"],
-                IdentifiableEntity(row["annotation_targets"]),
-                Image(row["annotation_bodies"]),
-            )
-            result.append(entity)
+        if not df_rel.empty:
+            for idx, row in df_rel.iterrows():
+                entity = Annotation(
+                    row["annotation_ids"],
+                    row["annotation_motivations"],
+                    IdentifiableEntity(row["annotation_targets"]),
+                    Image(row["annotation_bodies"]),
+                )
+                result.append(entity)
 
         return result
 
@@ -196,14 +226,15 @@ class GenericQueryProcessor:
             if isinstance(processor, RelationalQueryProcessor):
                 df_rel = processor.getAnnotationsWithTarget(manifestId)
 
-        for idx, row in df_rel.iterrows():
-            entity = Annotation(
-                row["annotation_ids"],
-                row["annotation_motivations"],
-                IdentifiableEntity(row["annotation_targets"]),
-                Image(row["annotation_bodies"]),
-            )
-            result.append(entity)
+        if not df_rel.empty:
+            for idx, row in df_rel.iterrows():
+                entity = Annotation(
+                    row["annotation_ids"],
+                    row["annotation_motivations"],
+                    IdentifiableEntity(row["annotation_targets"]),
+                    Image(row["annotation_bodies"]),
+                )
+                result.append(entity)
 
         return result
 
@@ -217,14 +248,15 @@ class GenericQueryProcessor:
             if isinstance(processor, RelationalQueryProcessor):
                 df_rel = processor.getAnnotationsWithBody(bodyId)
 
-        for idx, row in df_rel.iterrows():
-            entity = Annotation(
-                row["annotation_ids"],
-                row["annotation_motivations"],
-                IdentifiableEntity(row["annotation_targets"]),
-                Image(row["annotation_bodies"]),
-            )
-            result.append(entity)
+        if not df_rel.empty:
+            for idx, row in df_rel.iterrows():
+                entity = Annotation(
+                    row["annotation_ids"],
+                    row["annotation_motivations"],
+                    IdentifiableEntity(row["annotation_targets"]),
+                    Image(row["annotation_bodies"]),
+                )
+                result.append(entity)
 
         return result
 
@@ -238,14 +270,15 @@ class GenericQueryProcessor:
             if isinstance(processor, RelationalQueryProcessor):
                 df_rel = processor.getAnnotationsWithBodyAndTarget(bodyId, targetId)
 
-        for idx, row in df_rel.iterrows():
-            entity = Annotation(
-                row["annotation_ids"],
-                row["annotation_motivations"],
-                IdentifiableEntity(row["annotation_targets"]),
-                Image(row["annotation_bodies"]),
-            )
-            result.append(entity)
+        if not df_rel.empty:
+            for idx, row in df_rel.iterrows():
+                entity = Annotation(
+                    row["annotation_ids"],
+                    row["annotation_motivations"],
+                    IdentifiableEntity(row["annotation_targets"]),
+                    Image(row["annotation_bodies"]),
+                )
+                result.append(entity)
 
         return result
 
@@ -257,14 +290,15 @@ class GenericQueryProcessor:
             if isinstance(processor, RelationalQueryProcessor):
                 df_rel = processor.getAnnotationsWithTarget(targetId)
 
-        for idx, row in df_rel.iterrows():
-            entity = Annotation(
-                row["annotation_ids"],
-                row["annotation_motivations"],
-                IdentifiableEntity(row["annotation_targets"]),
-                Image(row["annotation_bodies"]),
-            )
-            result.append(entity)
+        if not df_rel.empty:
+            for idx, row in df_rel.iterrows():
+                entity = Annotation(
+                    row["annotation_ids"],
+                    row["annotation_motivations"],
+                    IdentifiableEntity(row["annotation_targets"]),
+                    Image(row["annotation_bodies"]),
+                )
+                result.append(entity)
 
         return result
 
@@ -276,23 +310,31 @@ class GenericQueryProcessor:
 
         for processor in self.queryProcessors:
             if isinstance(processor, TriplestoreQueryProcessor):
-                df_graph = processor.getCanvasesInCollection(collectionId)
+                df_graph = processor.getCanvasesInCollection(
+                    collectionId
+                ).drop_duplicates()
 
-        for processor in self.queryProcessors:
-            if isinstance(processor, RelationalQueryProcessor):
-                for idx, row in df_graph.iterrows():
-                    df_rel = concat(
-                        [df_rel, processor.getEntityById(row["id"])], ignore_index=True
-                    )
-        df_rel = (
-            df_rel.groupby(["id", "title"])["creator_name"].apply(list).reset_index()
-        )
+        if not df_graph.empty:
+            for processor in self.queryProcessors:
+                if isinstance(processor, RelationalQueryProcessor):
+                    for idx, row in df_graph.iterrows():
+                        df_rel = concat(
+                            [df_rel, processor.getEntityById(row["id"])],
+                            ignore_index=True,
+                        ).drop_duplicates()
 
-        joined_df = df_graph.merge(df_rel, how="left", on="id").fillna("")
+            df_rel = (
+                df_rel.groupby(["id", "title"])["creator_name"]
+                .apply(list)
+                .reset_index()
+            )
+            joined_df = df_graph.merge(df_rel, how="left", on="id").fillna("")
 
-        for idx, row in joined_df.iterrows():
-            entity = Canvas(row["id"], row["label"], row["title"], row["creator_name"])
-            result.append(entity)
+            for idx, row in joined_df.iterrows():
+                entity = Canvas(
+                    row["id"], row["label"], row["title"], row["creator_name"]
+                )
+                result.append(entity)
 
         return result
 
@@ -306,22 +348,28 @@ class GenericQueryProcessor:
             if isinstance(processor, TriplestoreQueryProcessor):
                 df_graph = processor.getCanvasesInManifest(manifestId)
 
-        for processor in self.queryProcessors:
-            if isinstance(processor, RelationalQueryProcessor):
-                for idx, row in df_graph.iterrows():
-                    df_rel = concat(
-                        [df_rel, processor.getEntityById(row["id"])], ignore_index=True
-                    )
+        if not df_graph.empty:
+            for processor in self.queryProcessors:
+                if isinstance(processor, RelationalQueryProcessor):
+                    for idx, row in df_graph.iterrows():
+                        df_rel = concat(
+                            [df_rel, processor.getEntityById(row["id"])],
+                            ignore_index=True,
+                        )
 
-        df_rel = (
-            df_rel.groupby(["id", "title"])["creator_name"].apply(list).reset_index()
-        )
+            df_rel = (
+                df_rel.groupby(["id", "title"])["creator_name"]
+                .apply(list)
+                .reset_index()
+            )
 
-        joined_df = df_graph.merge(df_rel, how="left", on="id").fillna("")
+            joined_df = df_graph.merge(df_rel, how="left", on="id").fillna("")
 
-        for idx, row in joined_df.iterrows():
-            entity = Canvas(row["id"], row["label"], row["title"], row["creator_name"])
-            result.append(entity)
+            for idx, row in joined_df.iterrows():
+                entity = Canvas(
+                    row["id"], row["label"], row["title"], row["creator_name"]
+                )
+                result.append(entity)
 
         return result
 
@@ -355,25 +403,28 @@ class GenericQueryProcessor:
             if isinstance(processor, RelationalQueryProcessor):
                 df_rel = processor.getEntitiesWithCreator(creatorName)
 
-        for processor in self.queryProcessors:
-            if isinstance(processor, TriplestoreQueryProcessor):
-                for idx, row in df_rel.iterrows():
-                    df_graph = concat(
-                        [df_graph, processor.getEntityById(row["id"])],
-                        ignore_index=True,
-                    )
+        if not df_rel.empty:
+            for processor in self.queryProcessors:
+                if isinstance(processor, TriplestoreQueryProcessor):
+                    for idx, row in df_rel.iterrows():
+                        df_graph = concat(
+                            [df_graph, processor.getEntityById(row["id"])],
+                            ignore_index=True,
+                        )
 
-        df_rel = (
-            df_rel.groupby(["id", "title"])["creator_name"].apply(list).reset_index()
-        )
-
-        joined_df = df_graph.merge(df_rel, how="left", on="id").fillna("")
-
-        for idx, row in joined_df.iterrows():
-            entity = EntityWithMetadata(
-                row["id"], row["label"], row["title"], row["creator_name"]
+            df_rel = (
+                df_rel.groupby(["id", "title"])["creator_name"]
+                .apply(list)
+                .reset_index()
             )
-            result.append(entity)
+
+            joined_df = df_graph.merge(df_rel, how="left", on="id").fillna("")
+
+            for idx, row in joined_df.iterrows():
+                entity = EntityWithMetadata(
+                    row["id"], row["label"], row["title"], row["creator_name"]
+                )
+                result.append(entity)
 
         return result
 
@@ -387,24 +438,28 @@ class GenericQueryProcessor:
             if isinstance(processor, TriplestoreQueryProcessor):
                 df_graph = processor.getEntitiesWithLabel(label)
 
-        for processor in self.queryProcessors:
-            if isinstance(processor, RelationalQueryProcessor):
-                for idx, row in df_graph.iterrows():
-                    df_rel = concat(
-                        [df_rel, processor.getEntityById(row["id"])], ignore_index=True
-                    )
+        if not df_graph.empty:
+            for processor in self.queryProcessors:
+                if isinstance(processor, RelationalQueryProcessor):
+                    for idx, row in df_graph.iterrows():
+                        df_rel = concat(
+                            [df_rel, processor.getEntityById(row["id"])],
+                            ignore_index=True,
+                        )
 
-        df_rel = (
-            df_rel.groupby(["id", "title"])["creator_name"].apply(list).reset_index()
-        )
-
-        joined_df = df_graph.merge(df_rel, how="left", on="id").fillna("")
-
-        for idx, row in joined_df.iterrows():
-            entity = EntityWithMetadata(
-                row["id"], row["label"], row["title"], row["creator_name"]
+            df_rel = (
+                df_rel.groupby(["id", "title"])["creator_name"]
+                .apply(list)
+                .reset_index()
             )
-            result.append(entity)
+
+            joined_df = df_graph.merge(df_rel, how="left", on="id").fillna("")
+
+            for idx, row in joined_df.iterrows():
+                entity = EntityWithMetadata(
+                    row["id"], row["label"], row["title"], row["creator_name"]
+                )
+                result.append(entity)
 
         return result
 
@@ -420,27 +475,28 @@ class GenericQueryProcessor:
             if isinstance(processor, RelationalQueryProcessor):
                 df_rel = processor.getEntitiesWithTitle(title).drop_duplicates()
 
-        for processor in self.queryProcessors:
-            if isinstance(processor, TriplestoreQueryProcessor):
-                for idx, row in df_rel.iterrows():
-                    df_graph = concat(
-                        [df_graph, processor.getEntityById(row["id"])],
-                        ignore_index=True,
-                    ).drop_duplicates()
+        if not df_rel.empty:
+            for processor in self.queryProcessors:
+                if isinstance(processor, TriplestoreQueryProcessor):
+                    for idx, row in df_rel.iterrows():
+                        df_graph = concat(
+                            [df_graph, processor.getEntityById(row["id"])],
+                            ignore_index=True,
+                        ).drop_duplicates()
 
-        df_rel = (
-            df_rel.groupby(["id", "title"])["creator_name"].apply(list).reset_index()
-        )
-
-        joined_df = df_graph.merge(df_rel, how="left", on="id").fillna("")
-
-        print(df_graph)
-
-        for idx, row in joined_df.iterrows():
-            entity = EntityWithMetadata(
-                row["id"], row["label"], row["title"], row["creator_name"]
+            df_rel = (
+                df_rel.groupby(["id", "title"])["creator_name"]
+                .apply(list)
+                .reset_index()
             )
-            result.append(entity)
+
+            joined_df = df_graph.merge(df_rel, how="left", on="id").fillna("")
+
+            for idx, row in joined_df.iterrows():
+                entity = EntityWithMetadata(
+                    row["id"], row["label"], row["title"], row["creator_name"]
+                )
+                result.append(entity)
 
         return result
 
@@ -452,9 +508,10 @@ class GenericQueryProcessor:
             if isinstance(processor, RelationalQueryProcessor):
                 df_rel = processor.getImagesWithTarget(canvasId)
 
-        for idx, row in df_rel.iterrows():
-            entity = Image(row["image_ids"])
-            result.append(entity)
+        if not df_rel.empty:
+            for idx, row in df_rel.iterrows():
+                entity = Image(row["image_ids"])
+                result.append(entity)
 
         return result
 
@@ -468,26 +525,38 @@ class GenericQueryProcessor:
 
         for processor in self.queryProcessors:
             if isinstance(processor, TriplestoreQueryProcessor):
-                df_graph = processor.getManifestsInCollection(collectionId)
+                df_graph = processor.getManifestsInCollection(
+                    collectionId
+                ).drop_duplicates()
 
-        for processor in self.queryProcessors:
-            if isinstance(processor, RelationalQueryProcessor):
-                for idx, row in df_graph.iterrows():
-                    df_rel = concat(
-                        [df_rel, processor.getEntityById(row["id"])], ignore_index=True
-                    )
+        if not df_graph.empty:
+            for processor in self.queryProcessors:
+                if isinstance(processor, RelationalQueryProcessor):
+                    for idx, row in df_graph.iterrows():
+                        df_rel = concat(
+                            [df_rel, processor.getEntityById(row["id"])],
+                            ignore_index=True,
+                        ).drop_duplicates()
 
-        df_graph = df_graph.groupby(["id", "label"])["items"].apply(list).reset_index()
-        df_rel = (
-            df_rel.groupby(["id", "title"])["creator_name"].apply(list).reset_index()
-        )
-
-        joined_df = df_graph.merge(df_rel, how="left", on="id").fillna("")
-
-        for idx, row in joined_df.iterrows():
-            entity = Manifest(
-                row["id"], row["label"], row["title"], row["creator_name"], row["items"]
+            df_graph = (
+                df_graph.groupby(["id", "label"])["items"].apply(list).reset_index()
             )
-            result.append(entity)
+            df_rel = (
+                df_rel.groupby(["id", "title"])["creator_name"]
+                .apply(list)
+                .reset_index()
+            )
+
+            joined_df = df_graph.merge(df_rel, how="left", on="id").fillna("")
+
+            for idx, row in joined_df.iterrows():
+                entity = Manifest(
+                    row["id"],
+                    row["label"],
+                    row["title"],
+                    row["creator_name"],
+                    row["items"],
+                )
+                result.append(entity)
 
         return result

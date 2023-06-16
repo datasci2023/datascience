@@ -37,17 +37,17 @@ class TestProjectBasic(unittest.TestCase):
     relational = "." + sep + "relational.db"
     graph = "http://127.0.0.1:9999/blazegraph/sparql"
 
-    def test_01_AnnotationProcessor(self):
-        ann_dp = AnnotationProcessor()
-        self.assertTrue(ann_dp.setDbPathOrUrl(self.relational))
-        self.assertEqual(ann_dp.getDbPathOrUrl(), self.relational)
-        self.assertTrue(ann_dp.uploadData(self.annotations))
-
     def test_02_MetadataProcessor(self):
         met_dp = MetadataProcessor()
         self.assertTrue(met_dp.setDbPathOrUrl(self.relational))
         self.assertEqual(met_dp.getDbPathOrUrl(), self.relational)
         self.assertTrue(met_dp.uploadData(self.metadata))
+
+    def test_01_AnnotationProcessor(self):
+        ann_dp = AnnotationProcessor()
+        self.assertTrue(ann_dp.setDbPathOrUrl(self.relational))
+        self.assertEqual(ann_dp.getDbPathOrUrl(), self.relational)
+        self.assertTrue(ann_dp.uploadData(self.annotations))
 
     def test_03_CollectionProcessor(self):
         col_dp = CollectionProcessor()
@@ -95,17 +95,17 @@ class TestProjectBasic(unittest.TestCase):
         self.assertTrue(generic.addQueryProcessor(rel_qp))
         self.assertTrue(generic.addQueryProcessor(grp_qp))
 
-        self.assertIsInstance(generic.getAllAnnotations(), list)
-        ann_1 = generic.getAllAnnotations()
-        self.assertIsInstance(ann_1, list)
-        for a in ann_1:
-            self.assertIsInstance(a, Annotation)
-
         self.assertIsInstance(generic.getAllCanvas(), list)
         can_1 = generic.getAllCanvas()
         self.assertIsInstance(can_1, list)
         for a in can_1:
             self.assertIsInstance(a, Canvas)
+
+        self.assertIsInstance(generic.getAllAnnotations(), list)
+        ann_1 = generic.getAllAnnotations()
+        self.assertIsInstance(ann_1, list)
+        for a in ann_1:
+            self.assertIsInstance(a, Annotation)
 
         self.assertIsInstance(generic.getAllCollections(), list)
         col_1 = generic.getAllCollections()
