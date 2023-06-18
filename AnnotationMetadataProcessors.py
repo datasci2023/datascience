@@ -2,7 +2,7 @@ from data_model import *
 from processor import Processor
 
 from sqlite3 import connect
-from pandas import read_csv, Series, DataFrame, merge
+from pandas import read_csv, Series, DataFrame, merge, read_sql
 import pandas as pd
 
 
@@ -98,6 +98,42 @@ class MetadataProcessor(Processor):
                     Series(metadata_internal_id, dtype="string"),
                 )
 
+                # count_query = f"""
+                # SELECT COUNT(*) FROM information_schema.tables 
+                # WHERE table_schema = '{self.dbPathOrUrl}' 
+                # AND table_name = 'Annotations'
+                # """
+                # df_sql = read_sql(count_query, con)
+                try:
+                    query = "SELECT * FROM 'Annotations'"
+                    annotation_temp = pd.read_sql_query(query, con)
+                    # Load EntityWithMetadata dataframe from the database so that it can be merged with dataframes created with uploadData method
+                    # Check again if this is the best method to do this
+                    annotation_merged = merge(
+                        annotation_temp,
+                        metadata_def,
+                        left_on="annotation_targets",
+                        right_on="id",
+                    )
+                    # Merge Annotations table with the temporary metadata table, using as key the id of the entity with metadata
+                    annotation_table = annotation_merged[
+                        [
+                            "annotation_ids",
+                            "annotation_internal_id",
+                            "annotation_bodies",
+                            "metadata_internal_id",
+                            "annotation_motivations"
+                        ]
+                    ]
+                    # Keep only the columns we need
+                    annotation_table = annotation_table.rename(
+                        columns={"metadata_internal_id": "annotation_targets"}
+                    )
+                    # Use the column with the entity with metadata internal id, instead of just the id; rename it as "annotation_targets"
+                    annotation_table.to_sql("Annotations", con, if_exists="replace", index=False)
+                except:
+                    pass
+
                 metadata_def.to_sql(
                     "EntitiesWithMetadata", con, if_exists="replace", index=False
                 )
@@ -166,7 +202,26 @@ class AnnotationProcessor(Processor):
                 annotation_table.insert(
                     3, "annotation_targets", Series(annotation_targets, dtype="string")
                 )
-                with connect(self.dbPathOrUrl) as con:
+
+                annotation_motivations = []
+                for idx, value in path2["motivation"].items():
+                    annotation_motivations.append(value)
+
+                annotation_table.insert(
+                    4,
+                    "annotation_motivations",
+                    Series(annotation_motivations, dtype="string"),
+                    )
+                # query = f"""
+                # SELECT COUNT(*)
+                # FROM information_schema.tables
+                # WHERE table_schema = '{self.dbPathOrUrl}'
+                # AND table_name = 'EntitiesWithMetadata';
+                # """
+                # df = pd.read_sql_query(query, con)
+                # print(df)
+                # if query != 0:
+                try:
                     query = "SELECT * FROM EntitiesWithMetadata"
                     metadata_temp = pd.read_sql_query(query, con)
 
@@ -179,29 +234,23 @@ class AnnotationProcessor(Processor):
                         right_on="id",
                     )
                     # Merge Annotations table with the temporary metadata table, using as key the id of the entity with metadata
-                    annotations = annotation_merged[
+                    annotation_table = annotation_merged[
                         [
                             "annotation_ids",
                             "annotation_internal_id",
                             "annotation_bodies",
                             "metadata_internal_id",
+                            "annotation_motivations"
                         ]
                     ]
                     # Keep only the columns we need
-                    annotations = annotations.rename(
+                    annotation_table = annotation_table.rename(
                         columns={"metadata_internal_id": "annotation_targets"}
                     )
                     # Use the column with the entity with metadata internal id, instead of just the id; rename it as "annotation_targets"
+                except:
+                    pass
 
-                    annotation_motivations = []
-                    for idx, value in path2["motivation"].items():
-                        annotation_motivations.append(value)
-
-                    annotations.insert(
-                        4,
-                        "annotation_motivations",
-                        Series(annotation_motivations, dtype="string"),
-                    )
 
                 # IMAGE TABLE
 
@@ -221,7 +270,7 @@ class AnnotationProcessor(Processor):
                 )
 
                 annotation_merged2 = merge(
-                    annotations,
+                    annotation_table,
                     image,
                     left_on="annotation_bodies",
                     right_on="image_ids",
