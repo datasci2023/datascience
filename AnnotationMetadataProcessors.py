@@ -2,7 +2,7 @@ from data_model import *
 from processor import Processor
 
 from sqlite3 import connect
-from pandas import read_csv, Series, DataFrame, merge
+from pandas import read_csv, Series, DataFrame, merge, read_sql
 import pandas as pd
 
 
@@ -19,7 +19,6 @@ class MetadataProcessor(Processor):
                     dtype={"id": "string", "title": "string", "creator": "string"},
                 )
 
-                # CREATORS
                 creators = pd.DataFrame()
                 creator_list = []
                 for value in path["creator"]:
@@ -28,13 +27,8 @@ class MetadataProcessor(Processor):
                 creators.insert(0, "creator", Series(creator_list, dtype="string"))
                 creators = creators.rename(columns={"creator": "creator_name"})
                 creators["creator_name"] = creators["creator_name"].str.split(";")
-                # Separate values using the separator ";"
-                # creators["creator"] = creators["creator"].str.strip()
-                # Eliminate blank spaces at the beginning and at the end; it creates problem I can't understand why
                 creators_def = creators.explode("creator_name")
-                # Expansion of the column in separate rows
                 creators_def = creators_def.reset_index(drop=True)
-                # Update of the index; " drop=True " removes the previous index without creating a new column with the previous index
                 internal_id_dict = {}
                 creator_internal_id = []
 
@@ -43,8 +37,6 @@ class MetadataProcessor(Processor):
 
                     if creator in internal_id_dict:
                         creators_def.drop(idx, inplace=True)
-                        # The option inplace=True assures that the change is applied directly to the DataFrame
-                        # without creating a new object DataFrame
                     else:
                         internal_id = "creator-" + str(len(internal_id_dict))
                         creator_internal_id.append(internal_id)
@@ -56,18 +48,12 @@ class MetadataProcessor(Processor):
                     Series(creator_internal_id, dtype="string"),
                 )
 
-                # ENTITY WITH METADATA
                 metadata_entities = path[["id", "title", "creator"]]
                 metadata_entities["creator"] = metadata_entities["creator"].str.split(
                     ";"
                 )
-                # Separate values using the separator ";"
-                # metadata_entities["creator"] = metadata_entities["creator"].str.strip()
-                # Eliminate blank spaces at the beginning and at the end; it creates problem I can't figure out why
                 metadata_entities = metadata_entities.explode("creator")
-                # Expansion of the column in separate rows
                 metadata_entities = metadata_entities.reset_index(drop=True)
-                # Update of the index; " drop=True " removes the previous index without creating a new column with the previous index
                 metadata_merged = merge(
                     metadata_entities,
                     creators_def,
@@ -75,9 +61,7 @@ class MetadataProcessor(Processor):
                     right_on="creator_name",
                     how="left",
                 )
-                # Merge EntitiesWithMetadata table with Creators table, using as key the column "creator"
                 metadata_def = metadata_merged[["id", "title", "creator_internal_id"]]
-                # Keep only the columns we need
                 metadata_def = metadata_def.rename(
                     columns={"creator_internal_id": "creator"}
                 )
@@ -97,6 +81,37 @@ class MetadataProcessor(Processor):
                     "metadata_internal_id",
                     Series(metadata_internal_id, dtype="string"),
                 )
+                try:
+                    query = f"""
+                    SELECT * FROM Annotations
+                    """
+                    df = pd.read_sql_query(query, con)
+                    if not df.empty:
+                        query = "SELECT * FROM 'Annotations'"
+                        annotation_temp = pd.read_sql_query(query, con)
+                        annotation_merged = merge(
+                            annotation_temp,
+                            metadata_def,
+                            left_on="annotation_targets",
+                            right_on="id",
+                        )
+                        annotation_table = annotation_merged[
+                            [
+                                "annotation_ids",
+                                "annotation_internal_id",
+                                "annotation_bodies",
+                                "metadata_internal_id",
+                                "annotation_motivations",
+                            ]
+                        ]
+                        annotation_table = annotation_table.rename(
+                            columns={"metadata_internal_id": "annotation_targets"}
+                        )
+                        annotation_table.to_sql(
+                            "Annotations", con, if_exists="replace", index=False
+                        )
+                except:
+                    pass
 
                 metadata_def.to_sql(
                     "EntitiesWithMetadata", con, if_exists="replace", index=False
@@ -108,7 +123,6 @@ class MetadataProcessor(Processor):
                 return True
 
         except Exception as e:
-            print("Error during the commit of the following changes:")
             print(e)
             return False
 
@@ -120,7 +134,6 @@ class AnnotationProcessor(Processor):
     def uploadData(self, path2):
         try:
             with connect(self.dbPathOrUrl) as con:
-                # ANNOTATION TABLE
                 path2 = read_csv(
                     path2,
                     keep_default_na=False,
@@ -166,44 +179,40 @@ class AnnotationProcessor(Processor):
                 annotation_table.insert(
                     3, "annotation_targets", Series(annotation_targets, dtype="string")
                 )
-                with connect(self.dbPathOrUrl) as con:
+
+                annotation_motivations = []
+                for idx, value in path2["motivation"].items():
+                    annotation_motivations.append(value)
+
+                annotation_table.insert(
+                    4,
+                    "annotation_motivations",
+                    Series(annotation_motivations, dtype="string"),
+                )
+                try:
                     query = "SELECT * FROM EntitiesWithMetadata"
                     metadata_temp = pd.read_sql_query(query, con)
 
-                    # Load EntityWithMetadata dataframe from the database so that it can be merged with dataframes created with uploadData method
-                    # Check again if this is the best method to do this
                     annotation_merged = merge(
                         annotation_table,
                         metadata_temp,
                         left_on="annotation_targets",
                         right_on="id",
                     )
-                    # Merge Annotations table with the temporary metadata table, using as key the id of the entity with metadata
-                    annotations = annotation_merged[
+                    annotation_table = annotation_merged[
                         [
                             "annotation_ids",
                             "annotation_internal_id",
                             "annotation_bodies",
                             "metadata_internal_id",
+                            "annotation_motivations",
                         ]
                     ]
-                    # Keep only the columns we need
-                    annotations = annotations.rename(
+                    annotation_table = annotation_table.rename(
                         columns={"metadata_internal_id": "annotation_targets"}
                     )
-                    # Use the column with the entity with metadata internal id, instead of just the id; rename it as "annotation_targets"
-
-                    annotation_motivations = []
-                    for idx, value in path2["motivation"].items():
-                        annotation_motivations.append(value)
-
-                    annotations.insert(
-                        4,
-                        "annotation_motivations",
-                        Series(annotation_motivations, dtype="string"),
-                    )
-
-                # IMAGE TABLE
+                except:
+                    pass
 
                 image = pd.DataFrame()
                 image_ids = []
@@ -221,12 +230,11 @@ class AnnotationProcessor(Processor):
                 )
 
                 annotation_merged2 = merge(
-                    annotations,
+                    annotation_table,
                     image,
                     left_on="annotation_bodies",
                     right_on="image_ids",
                 )
-                # Merge Annotations table with Images table, using as key the id of the image
                 annotation_def = annotation_merged2[
                     [
                         "annotation_internal_id",
@@ -236,12 +244,9 @@ class AnnotationProcessor(Processor):
                         "annotation_motivations",
                     ]
                 ]
-                # Keep only the columns we need
                 annotation_def = annotation_def.rename(
                     columns={"images_internal_id": "annotation_bodies"}
                 )
-                # Use the column with the image internal id, instead of just the id; rename it as "annotation_bodies"
-                # Alternative method: annotation_table["annotation_bodies"] = annotation_table["annotation_bodies"].replace(image.set_index("image_ids")["images_internal_id"])
 
                 annotation_def.to_sql(
                     "Annotations", con, if_exists="replace", index=False
@@ -253,6 +258,5 @@ class AnnotationProcessor(Processor):
                 return True
 
         except Exception as e:
-            print("Error during the commit of the following changes:")
             print(e)
             return False

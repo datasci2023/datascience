@@ -12,7 +12,7 @@ Canvas = URIRef("https://github.com/datasci2023/datascience/class/Canvas")
 
 # attributes related to classes - basilico
 id = URIRef("https://github.com/datasci2023/datascience/attribute/id")
-type = URIRef("https://github.com/datasci2023/datascience/attribute/type")
+# type = URIRef("https://github.com/datasci2023/datascience/attribute/type")
 label = URIRef("https://github.com/datasci2023/datascience/attribute/label")
 
 # relations - spaghetti

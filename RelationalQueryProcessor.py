@@ -61,16 +61,22 @@ class RelationalQueryProcessor(QueryProcessor):
 
     def getEntitiesWithTitle(self, title: str):
         with connect(self.dbPathOrUrl) as con:
-            query = f"SELECT * FROM EntitiesWithMetadata LEFT JOIN  Creators ON EntitiesWithMetadata.creator == Creators.creator_internal_id WHERE title = '{title}'"
+            query = f"""
+            SELECT *, TRIM(Creators.creator_name) AS new_creator 
+            FROM EntitiesWithMetadata
+            LEFT JOIN  Creators ON EntitiesWithMetadata.creator == Creators.creator_internal_id WHERE title = '{title}'
+            """
             df_sql = read_sql(query, con)
             return df_sql
 
     def getEntitiesWithCreator(self, creatorName: str):
         with connect(self.dbPathOrUrl) as con:
             query = f"""
-            SELECT * FROM EntitiesWithMetadata
-            JOIN Creators ON EntitiesWithMetadata.creator == Creators.creator_internal_id 
-            WHERE Creators.creator_name = '{creatorName}'
+            SELECT *,
+            TRIM(Creators.creator_name) AS new_creator
+            FROM EntitiesWithMetadata
+            LEFT JOIN Creators ON EntitiesWithMetadata.creator == Creators.creator_internal_id 
+            WHERE new_creator = '{creatorName}'
             """
             df_sql = read_sql(query, con)
             return df_sql

@@ -1,10 +1,6 @@
-from AnnotationMetadataProcessors import AnnotationProcessor, MetadataProcessor
-from RelationalQueryProcessor import RelationalQueryProcessor
-from collectionProcessor import CollectionProcessor
-from TriplestoreQueryProcessor import TriplestoreQueryProcessor
-from genericQueryProcessor import GenericQueryProcessor
-from generic_creator import GenericQueryProcessorDeneme
-from generic_test import GenericQueryProcessor
+from impl import *
+
+# from generic_test import GenericQueryProcessor
 
 rel_path = "relational.db"
 met_dp = MetadataProcessor()
@@ -33,48 +29,79 @@ generic = GenericQueryProcessor()
 generic.addQueryProcessor(rel_qp)
 generic.addQueryProcessor(grp_qp)
 
-generic3 = GenericQueryProcessor()
-generic3.addQueryProcessor(rel_qp)
-generic3.addQueryProcessor(grp_qp)
-
-# result = generic3.getAllAnnotations()
-# result = generic3.getAllCanvas()
-# result = generic3.getAllCollections()
-# result = generic3.getAllImages()
-# result = generic3.getAllManifests()
-# result = generic3.getAnnotationsToCanvas(
+# result = generic.getAllAnnotations()
+# result = generic.getAllCanvas()
+# result = generic.getAllCollections()
+# result = generic.getAllImages()
+# result = generic.getAllManifests()
+# result = generic.getAnnotationsToCanvas(
 #     "https://dl.ficlit.unibo.it/iiif/2/28429/canvas/p1"
 # )
-# result = generic3.getAnnotationsToCollection(
+# result = generic.getAnnotationsToCollection(
 #     "https://dl.ficlit.unibo.it/iiif/28429/collection"
 # )
-# result = generic3.getAnnotationsToManifest(
+# result = generic.getAnnotationsToCollection(
+#     "https://dl.ficlit.unibo.it/iiif/19428-19425/collection"
+# )
+# result = generic.getAnnotationsToManifest(
 #     "https://dl.ficlit.unibo.it/iiif/2/28429/manifest"
 # )
-# result = generic3.getAnnotationsWithBody(
+# result = generic.getAnnotationsWithBody(
 #     "https://dl.ficlit.unibo.it/iiif/2/45498/full/699,800/0/default.jpg"
 # )
-# result = generic3.getAnnotationsWithBodyAndTarget(
+# result = generic.getAnnotationsWithBodyAndTarget(
 #     "https://dl.ficlit.unibo.it/iiif/2/45498/full/699,800/0/default.jpg",
 #     "https://dl.ficlit.unibo.it/iiif/2/28429/canvas/p1",
 # )
-# result = generic3.getAnnotationsWithTarget(
+# result = generic.getAnnotationsWithTarget(
 #     "https://dl.ficlit.unibo.it/iiif/2/28429/canvas/p1"
 # )
-result = generic3.getCanvasesInCollection(
-    "https://dl.ficlit.unibo.it/iiif/28429/collectin"
-)
-# result = generic3.getCanvasesInManifest(
-#     "https://dl.ficlit.unibo.it/iiif/2/28429/manifest"
+# result = generic.getCanvasesInCollection(
+#     "https://dl.ficlit.unibo.it/iiif/19428-19425/collection"
 # )
-# result = generic3.getEntityById("https://dl.ficlit.unibo.it/iiif/2/28429/manifest")
-# result = generic3.getEntitiesWithCreator("Doe, Jane")
-# result = generic3.getEntitiesWithLabel("Works of Dante Alighieri")
-# result = generic3.getEntitiesWithTitle("Dante Alighieri: Opere")
-# result = generic3.getImagesAnnotatingCanvas(
-#     "https://dl.ficlit.unibo.it/iiif/2/28429/canvas/p1"
-# )
-# result = generic3.getManifestsInCollection(
+# result = generic.getCanvasesInCollection(
 #     "https://dl.ficlit.unibo.it/iiif/28429/collection"
 # )
+# result = generic.getCanvasesInManifest(
+#     "https://dl.ficlit.unibo.it/iiif/2/28429/manifest"
+# )
+# result = generic.getCanvasesInManifest(
+#     "https://dl.ficlit.unibo.it/iiif/2/19428/manifest"
+# )
+# result = generic.getCanvasesInManifest(
+#     "https://dl.ficlit.unibo.it/iiif/2/19425/manifest"
+# )
+# result = generic.getEntityById("https://dl.ficlit.unibo.it/iiif/19428-19425/collection")
+# result = generic.getEntityById("https://dl.ficlit.unibo.it/iiif/28429/collection")
+# result = generic.getEntityById("https://dl.ficlit.unibo.it/iiif/2/28429/manifest")
+# result1 = generic.getEntityById("https://dl.ficlit.unibo.it/iiif/2/19428/manifest")
+# result2 = generic.getEntityById("https://dl.ficlit.unibo.it/iiif/2/19425/manifest")
+# result3 = generic.getEntityById("https://dl.ficlit.unibo.it/iiif/2/19425/canvas/p1")
+# result4 = generic.getEntityById("https://dl.ficlit.unibo.it/iiif/2/19")
+
+# result = generic.getEntitiesWithCreator("Doe, Jane")
+# result1 = generic.getEntitiesWithCreator("Doe, John")
+# result2 = generic.getEntitiesWithCreator("Alighieri, Dante")
+# result3 = generic.getEntitiesWithCreator("Raimondi, Giuseppe")
+# result = generic.getEntitiesWithLabel("Works of Dante Alighieri")
+# result = generic.getEntitiesWithLabel(
+#     'Raimondi, Giuseppe. Quaderno manoscritto, "La vecchia centrale termica. Aprile 965"'
+# )
+result = generic.getEntitiesWithTitle("Dante Alighieri: Opere")
+result1 = generic.getEntitiesWithTitle("Il Canzoniere")
+result3 = generic.getEntitiesWithTitle(
+    'Raimondi, Giuseppe. Quaderno manoscritto, "La vecchia centrale termica. Aprile 965"'
+)
+# result = generic.getImagesAnnotatingCanvas(
+#     "https://dl.ficlit.unibo.it/iiif/2/28429/canvas/p1"
+# )
+# result = generic.getManifestsInCollection(
+#     "https://dl.ficlit.unibo.it/iiif/28429/collection"
+# )
+# result1 = generic.getManifestsInCollection(
+#     "https://dl.ficlit.unibo.it/iiif/19428-19425/collection"
+# )
+
 print(result)
+print(result1)
+print(result3)

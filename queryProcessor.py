@@ -19,14 +19,26 @@ class QueryProcessor(Processor):
         if os.path.isfile(path) or path.endswith(".db"):
             with connect(self.dbPathOrUrl) as con:
                 query = f"""
-                SELECT * FROM EntitiesWithMetadata
-                LEFT JOIN Annotations ON EntitiesWithMetadata.metadata_internal_id == Annotations.annotation_targets
-                LEFT JOIN Images ON Annotations.annotation_bodies == Images.images_internal_id
-                LEFT JOIN Creators ON EntitiesWithMetadata.creator == Creators.creator_internal_id
-                WHERE EntitiesWithMetadata.id = '{entityId}' OR Annotations.annotation_ids = '{entityId}' OR Images.image_ids = '{entityId}'
+                    SELECT
+                        EntitiesWithMetadata.*,
+                        Annotations.*,
+                        Images.*,
+                        TRIM(Creators.creator_name) AS creator_name,
+                        CASE
+                            WHEN EntitiesWithMetadata.id = '{entityId}' THEN 'EntitiesWithMetadata'
+                            WHEN Annotations.annotation_ids = '{entityId}' THEN 'Annotations'
+                            WHEN Images.image_ids = '{entityId}' THEN 'Images'
+                            ELSE NULL
+                        END AS entityId_table
+                    FROM EntitiesWithMetadata
+                    LEFT JOIN Annotations ON EntitiesWithMetadata.metadata_internal_id = Annotations.annotation_targets
+                    LEFT JOIN Images ON Annotations.annotation_bodies = Images.images_internal_id
+                    LEFT JOIN Creators ON EntitiesWithMetadata.creator = Creators.creator_internal_id
+                    WHERE EntitiesWithMetadata.id = '{entityId}' OR Annotations.annotation_ids = '{entityId}' OR Images.image_ids = '{entityId}'
                 """
                 df = read_sql(query, con)
                 return df
+
         elif path.startswith("https:") or path.startswith("http:"):
             endpoint = self.getDbPathOrUrl()
             query = (
@@ -38,10 +50,12 @@ class QueryProcessor(Processor):
             PREFIX feslegen: <https://github.com/datasci2023/datascience/attribute/>
             PREFIX spaghetti:  <https://github.com/datasci2023/datascience/relation/>
         
-            SELECT ?id ?type ?label 
+            SELECT ?id ?label ?items (strafter(str(?t), 'class/') AS ?type)
             WHERE {
-                ?id rdf:type ?type ;
+                ?id rdf:type ?t ;
                     rdfs:label ?label .
+                
+                OPTIONAL {?id spaghetti:items ?items}
                 FILTER (?id = <%s>)
             }
             """

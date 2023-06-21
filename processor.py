@@ -16,5 +16,3 @@ class Processor(object):
             self.dbPathOrUrl = pathOrUrl
             return True
         return False
-
-    # if the self.dbpath exists, then the new dbpath is the one given as a parameter and it is assigned as the new dbpath
